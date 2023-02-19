@@ -1,0 +1,39 @@
+= OpenShift Infra Playground
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-02
+// Metadata
+:description: This repository provides basic information on how to deploy extra features on an OpenShift Container Platform installation, such as Openshift Virtualization, Openshift Data Foundation, etc.
+:keywords: openshift, odf, virtualization, red hat
+// Create TOC wherever needed
+:toc: macro
+:sectanchors:
+:sectnumlevels: 2
+:sectnums: 
+:source-highlighter: pygments
+:imagesdir: images
+// Start: Enable admonition icons
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+ifndef::env-github[]
+:icons: font
+endif::[]
+
+This repository provides basic information on how to deploy extra features on an OpenShift Container Platform installation, such as Openshift Virtualization, Openshift Data Foundation, etc.
+
+// Create the Table of contents here
+toc::[]
+
+== Introduction
+
+
+// TODO: Openshift 
+
+// TODO: Openshift Virtualization
+
+// TODO: Openshift Data Foundation
+
