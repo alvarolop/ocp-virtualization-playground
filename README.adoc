@@ -30,6 +30,16 @@ toc::[]
 
 == Introduction
 
+*OpenShift Container Platform* is a cloud-based Kubernetes container platform. The foundation of OpenShift Container Platform is based on Kubernetes and therefore shares the same technology. It is designed to allow applications and the data centers that support them to expand from just a few machines and applications to thousands of machines that serve millions of clients. More information https://docs.openshift.com/container-platform/4.12/getting_started/openshift-overview.html[here].
+
+*OpenShift Virtualization* is an add-on to OpenShift Container Platform that allows you to run and manage virtual machine workloads alongside container workloads. More information https://docs.openshift.com/container-platform/4.12/virt/about-virt.html[here].
+
+*Red Hat OpenShift Data Foundation* is a provider of agnostic persistent storage for OpenShift Container Platform supporting file, block, and object storage, either in-house or in hybrid clouds. As a Red Hat storage solution, Red Hat OpenShift Data Foundation is completely integrated with OpenShift Container Platform for deployment, management, and monitoring. More information https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.12[here].
+
+
+NOTE: Red Hat OpenShift Kubernetes Engine is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. OpenShift Kubernetes Engine offers a subset of the features that OpenShift Container Platform offers. More information https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[here].
+
+
 
 // TODO: Openshift 
 
@@ -37,3 +47,16 @@ toc::[]
 
 // TODO: Openshift Data Foundation
 
+== Openshift installation
+
+
+
+== Openshift Virtualization
+
+
+
+== Openshift Data Foundation
+
+
+
+== Openshift Logging
