@@ -139,6 +139,34 @@ A *VM object* specifies a template to create a running instance of the VM inside
 
 The default templates are provided by Red Hat. These templates include settings to create generic systems with networking, users, and storage preconfigured.
 
+1. Create the Project to deploy the VM:
++
+[source, bash]
+----
+cat ocp-virtualization/10-vm-project-template.yaml | \
+VM_PROJECT=vms-test envsubst > ocp-virtualization/10-vm-project.yaml
+
+oc apply -f ocp-virtualization/10-vm-project.yaml
+----
++
+2. Create the Virtual Machine:
++
+[source, bash]
+----
+cat ocp-virtualization/11-vm-fedora-template.yaml | \
+VM_PROJECT=vms-test VM_NAME=fedora-01 \
+envsubst > ocp-virtualization/11-vm-fedora.yaml
+
+oc apply -f ocp-virtualization/11-vm-fedora.yaml
+----
+
+
+NOTE: Now, you can access the VM using the following command `virtctl -n vms-test ssh fedora@fedora-01`.
+
+
+
+
+
 === Network Interfaces
 
 * *Default pod network*: To use the default pod network, the network interface must use the Masquerade binding method. A masquerade binding uses NAT to allow other pods in the cluster to communicate with the VMI. 
@@ -159,9 +187,16 @@ When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the 
 
 
 
+:sectnums!:
+
 == Annex: SSH to VMs
 
 The easiest way to SSH the VMs is using the *KubeVirt command line interface*. You can install it by downloading the binary from the OCP cluster or using the official the https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html[documentation].
 
+In addition to using the CLI, the default virtual machines only accept public key authorization. Therefore, you will need to perform extra configuration steps in the VM creation. https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html#virt-accessing-vmi-ssh_virt-accessing-vm-consoles[Here] you can find extra documentation.
 
+[source, console]
+----
+oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub
+----
 
