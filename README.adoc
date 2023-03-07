@@ -32,26 +32,81 @@ toc::[]
 
 *OpenShift Container Platform* is a cloud-based Kubernetes container platform. The foundation of OpenShift Container Platform is based on Kubernetes and therefore shares the same technology. It is designed to allow applications and the data centers that support them to expand from just a few machines and applications to thousands of machines that serve millions of clients. More information https://docs.openshift.com/container-platform/4.12/getting_started/openshift-overview.html[here].
 
-*OpenShift Virtualization* is an add-on to OpenShift Container Platform that allows you to run and manage virtual machine workloads alongside container workloads. More information https://docs.openshift.com/container-platform/4.12/virt/about-virt.html[here].
+*OpenShift Virtualization* is an add-on to OpenShift Container Platform that allows you to *run and manage virtual machine workloads alongside container workloads*. More information https://docs.openshift.com/container-platform/4.12/virt/about-virt.html[here].
 
-*Red Hat OpenShift Data Foundation* is a provider of agnostic persistent storage for OpenShift Container Platform supporting file, block, and object storage, either in-house or in hybrid clouds. As a Red Hat storage solution, Red Hat OpenShift Data Foundation is completely integrated with OpenShift Container Platform for deployment, management, and monitoring. More information https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.12[here].
+*Red Hat OpenShift Data Foundation* is a provider of *agnostic persistent storage* for OpenShift Container Platform supporting *file, block, and object storage*, either in-house or in hybrid clouds. As a Red Hat storage solution, Red Hat OpenShift Data Foundation is completely integrated with OpenShift Container Platform for deployment, management, and monitoring. More information https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.12[here].
 
 
 NOTE: Red Hat OpenShift Kubernetes Engine is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. OpenShift Kubernetes Engine offers a subset of the features that OpenShift Container Platform offers. More information https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[here].
 
 
 
-// TODO: Openshift 
-
-// TODO: Openshift Virtualization
-
-// TODO: Openshift Data Foundation
-
-== Openshift installation
-
-
 
 == Openshift Virtualization
+
+Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
+
+WARNING: The cluster must be installed on premise, on bare metal with Red Hat Enterprise Linux CoreOS workers.
+
+
+.Disambiguation
+[TIP]
+====
+* *Virtualization* is to create virtualized resources from physical hardware, such as VMs.
+* *IaaS* is a form of cloud computing that provides IT infrastructure.
+* *Hypervisor* is virtualization software that helps you to create and manage VMs.
+====
+
+=== Installation
+
+1. Create the Project and OperatorGroup to install the operator:
++
+[source, bash]
+----
+oc apply -f ocp-virtualization/01-namespace.yaml
+oc apply -f ocp-virtualization/02-operatorgroup.yaml
+
+----
++
+2. Install the OpenShift Virtualization operator:
++
+[source, bash]
+----
+oc apply -f ocp-virtualization/03-subscription.yaml
+----
++
+3. Create the HyperConverged object, which deploys and manages OpenShift Virtualization and its components:
++
+[source, bash]
+----
+oc apply -f ocp-virtualization/04-hyperconverged.yaml
+----
+
+If you install the operator using the web console, you will see the following messages during installation:
+
+image::ocp-virt-installation.png[]
+
+Click on `Create HyperConverged` button to create a default HyperConverged instance to be able to create Virtual Machines.
+
+=== Virtualization CRDs
+
+* [HC] *OpenShift Virtualization Deployment* (HyperConverged) to deploy and manage OpenShift Virtualization and its components, such as the `virt-controller` cluster-level component and the `virt-handler` host-level Daemonset.
+* [HPP] *HostPathProvisioner deployment* (HostPathProvisioners) to create virtual machines that use local node storage.
+
+
+=== Creating Virtual Machines
+
+A *VM object* specifies a template to create a running instance of the VM inside your cluster. The running instance of a VM is a *virtual machine instance (VMI*), and it is executed and managed by a container located inside a pod. If a VMI is deleted, another instance is generated based on the VM object configuration.
+
+The default templates are provided by Red Hat. These templates include settings to create generic systems with networking, users, and storage preconfigured.
+
+=== Network Interfaces
+
+* *Default pod network*: To use the default pod network, the network interface must use the Masquerade binding method. A masquerade binding uses NAT to allow other pods in the cluster to communicate with the VMI. 
+* *Multus*: Connect a VM to multiple interfaces and external networks with the Container Networking Interface (CNI) plug-in, *Multus*. To connect to an external network, you must create a `linux-bridge` network attachment definition that exposes the layer-2 device to a specific namespace.
+* *Single Root I/O Virtualization*: To connect to a virtual function network for high performance.
+
+When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the Dynamic Host Configuration Protocol (DHCP) address of the VMI. This routing makes it possible to also connect to a VMI with a port-forwarding connection.
 
 
 
