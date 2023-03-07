@@ -1,0 +1,8 @@
+---
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: openshift-cnv
+  annotations:
+    openshift.io/description: "Openshift Virtualization namespace"
+    openshift.io/display-name: "Openshift CNV"

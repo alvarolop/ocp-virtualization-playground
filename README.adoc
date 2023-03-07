@@ -40,6 +40,45 @@ toc::[]
 NOTE: Red Hat OpenShift Kubernetes Engine is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. OpenShift Kubernetes Engine offers a subset of the features that OpenShift Container Platform offers. More information https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[here].
 
 
+== OpenShift Installation
+
+In order to be able to create VMs on OpenShift on AWS, you will need to add bare metal nodes to your OpenShift installation. For that, create the following Machine Set:
+
+
+1. Get the clusterID using the following command:
++
+[source, bash]
+----
+oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster
+----
++
+2. Customize the Machine Set:
++
+[source, bash]
+----
+cat ocp-installation/01-baremetal-machineset-template.yaml | \
+ROLE=worker REGION=us-east-2 ZONE=us-east-2a PREFIX=metal AMI=ami-057fe628c533932e2 \
+INFRASTRUCTURE_ID=$(oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster) \
+envsubst > ocp-installation/01-baremetal-machineset.yaml
+----
++
+3. Create the Machine Set:
++
+[source, bash]
+----
+oc apply -f ocp-installation/01-baremetal-machineset.yaml
+----
+
+.AWS Instances
+[TIP]
+====
+For other sizes of AWS nodes, check the https://aws.amazon.com/ec2/instance-types[instance types list].
+
+Take into account that pricing for Bare Metal nodes in considerably higher than for normal instances. For example, `c5.metal` costs $4.8 per hour while `m5.xlarge` is just $0.222. https://aws.amazon.com/ec2/pricing/on-demand/[Here] you can find a full list of prices.
+====
+
+For more information, check the https://docs.openshift.com/container-platform/4.12/machine_management/creating_machinesets/creating-machineset-aws.html#machineset-yaml-aws_creating-machineset-aws[official documentation].
+
 
 
 == Openshift Virtualization
@@ -115,3 +154,14 @@ When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the 
 
 
 == Openshift Logging
+
+
+
+
+
+== Annex: SSH to VMs
+
+The easiest way to SSH the VMs is using the *KubeVirt command line interface*. You can install it by downloading the binary from the OCP cluster or using the official the https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html[documentation].
+
+
+
