@@ -74,7 +74,7 @@ oc apply -f ocp-installation/01-baremetal-machineset.yaml
 ====
 For other sizes of AWS nodes, check the https://aws.amazon.com/ec2/instance-types[instance types list].
 
-Take into account that pricing for Bare Metal nodes in considerably higher than for normal instances. For example, `c5.metal` costs $4.8 per hour while `m5.xlarge` is just $0.222. https://aws.amazon.com/ec2/pricing/on-demand/[Here] you can find a full list of prices.
+Take into account that pricing for Bare Metal nodes is considerably higher than for normal instances. For example, `c5.metal` costs $4.8 per hour while `m5.xlarge` is just $0.222. https://aws.amazon.com/ec2/pricing/on-demand/[Here] you can find a full list of prices.
 ====
 
 For more information, check the https://docs.openshift.com/container-platform/4.12/machine_management/creating_machinesets/creating-machineset-aws.html#machineset-yaml-aws_creating-machineset-aws[official documentation].
@@ -85,7 +85,7 @@ For more information, check the https://docs.openshift.com/container-platform/4.
 
 Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
 
-WARNING: The cluster must be installed on premise, on bare metal with Red Hat Enterprise Linux CoreOS workers.
+WARNING: The cluster must be installed on-premise, on bare metal with Red Hat Enterprise Linux CoreOS workers.
 
 
 .Disambiguation
@@ -161,7 +161,7 @@ oc apply -f ocp-virtualization/11-vm-fedora.yaml
 ----
 
 
-NOTE: Now, you can access the VM using the following command `virtctl -n vms-test ssh fedora@fedora-01`.
+NOTE: Now, you can access the VM using the following command `virtctl -n vms-test ssh fedora@fedora-03`.
 
 
 
@@ -197,6 +197,13 @@ In addition to using the CLI, the default virtual machines only accept public ke
 
 [source, console]
 ----
-oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub
+oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -n vms-test
 ----
 
+
+
+
+== Annex: Other useful links
+
+* https://access.redhat.com/articles/6409731[KCS: Deploy OpenShift Virtualization on AWS metal instance types].
+* https://access.redhat.com/articles/6738351[Deploy OpenShift sandboxed containers on AWS Bare Metal nodes (Tech Preview)].
