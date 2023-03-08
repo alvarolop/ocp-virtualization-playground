@@ -59,7 +59,7 @@ spec:
         resources:
           requests:
             memory: 2Gi
-      hostname: example
+      hostname: $VM_NAME
       networks:
         - name: default
           pod: {}

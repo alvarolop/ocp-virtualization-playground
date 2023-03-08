@@ -69,7 +69,7 @@ envsubst > ocp-installation/01-baremetal-machineset.yaml
 oc apply -f ocp-installation/01-baremetal-machineset.yaml
 ----
 
-.AWS Instances
+.*AWS Instances*
 [TIP]
 ====
 For other sizes of AWS nodes, check the https://aws.amazon.com/ec2/instance-types[instance types list].
@@ -88,7 +88,7 @@ Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the
 WARNING: The cluster must be installed on-premise, on bare metal with Red Hat Enterprise Linux CoreOS workers.
 
 
-.Disambiguation
+.*Disambiguation*
 [TIP]
 ====
 * *Virtualization* is to create virtualized resources from physical hardware, such as VMs.
@@ -161,9 +161,14 @@ oc apply -f ocp-virtualization/11-vm-fedora.yaml
 ----
 
 
-NOTE: Now, you can access the VM using the following command `virtctl -n vms-test ssh fedora@fedora-03`.
+.**Accessing the VM**
+[NOTE]
+====
+Now, you can SSH the VM using the following command `virtctl -n vms-test ssh fedora@fedora-01`.
 
+You can also access locally a service of the VM forwarding the port to your machine: `oc port-forward $VIRT_LAUNCHER_POD $REMOTE_PORT:$LOCAL_PORT -n $VM_PROJECT`
 
+====
 
 
 
