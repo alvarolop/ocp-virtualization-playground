@@ -208,7 +208,26 @@ oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -
 
 
 
+
+== Annex: Testing container image
+
+In order to quickly deploy a container with tools to check connectivity, I normally use the UBI version of the *Red Hat Enterprise Linux Support Tools* which can be found in the https://catalog.redhat.com/software/containers/rhel8/support-tools/5ba3eaf9bed8bd6ee819b78b?container-tabs=overview[RH Container Catalog]. 
+
+You can deploy this container using the following script:
+
+[source, bash]
+----
+cat ocp-tools/01-toolbox-template.yaml | \
+POD_PROJECT=vms-test POD_NAME=support-tools \
+envsubst > ocp-tools/01-toolbox.yaml
+
+oc apply -f ocp-tools/01-toolbox.yaml
+----
+
+
+
+
 == Annex: Other useful links
 
-* https://access.redhat.com/articles/6409731[KCS: Deploy OpenShift Virtualization on AWS metal instance types].
-* https://access.redhat.com/articles/6738351[Deploy OpenShift sandboxed containers on AWS Bare Metal nodes (Tech Preview)].
+* KCS: https://access.redhat.com/articles/6409731[Deploy OpenShift Virtualization on AWS metal instance types].
+* KCS: https://access.redhat.com/articles/6738351[Deploy OpenShift sandboxed containers on AWS Bare Metal nodes (Tech Preview)].
