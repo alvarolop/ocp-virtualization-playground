@@ -1,3 +1,4 @@
+---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
@@ -67,13 +68,6 @@ spec:
         - name: rootdisk
           containerDisk:
             image: 'quay.io/containerdisks/fedora:36'
-        # - cloudInitNoCloud:
-        #     userData: |-
-        #       #cloud-config
-        #       user: fedora
-        #       password: fedora
-        #       chpasswd: { expire: False }
-        #   name: cloudinitdisk
         - cloudInitConfigDrive:
             userData: |-
               #cloud-config
