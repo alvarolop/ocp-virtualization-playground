@@ -20,6 +20,7 @@ spec:
       labels:
         kubevirt.io/domain: $VM_NAME
         kubevirt.io/size: small
+        app: $VM_NAME
     spec:
       accessCredentials:
       - sshPublicKey:
@@ -74,3 +75,20 @@ spec:
               user: fedora
               chpasswd: { expire: False }
           name: cloudinitdisk
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: $VM_NAME
+    os.template.kubevirt.io/fedora36: 'true'
+  name: $VM_NAME
+  namespace: $VM_PROJECT
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: $VM_NAME
+  type: ClusterIP

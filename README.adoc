@@ -182,12 +182,19 @@ When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the 
 
 
 
+
+
+
+
+
+
+
+
 == Openshift Data Foundation
 
 
 
 == Openshift Logging
-
 
 
 
