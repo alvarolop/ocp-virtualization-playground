@@ -57,7 +57,7 @@ oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster
 [source, bash]
 ----
 cat ocp-installation/01-baremetal-machineset-template.yaml | \
-ROLE=worker REGION=us-east-2 ZONE=us-east-2a PREFIX=metal AMI=ami-057fe628c533932e2 \
+ROLE=worker REGION=eu-west-3 ZONE=eu-west-3a PREFIX=metal AMI=ami-06f98f607a50937c6 \
 INFRASTRUCTURE_ID=$(oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster) \
 envsubst > ocp-installation/01-baremetal-machineset.yaml
 ----
@@ -102,7 +102,7 @@ WARNING: The cluster must be installed on-premise, on bare metal with Red Hat En
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/01-namespace.yaml
+oc apply -f ocp-virtualization/01-project.yaml
 oc apply -f ocp-virtualization/02-operatorgroup.yaml
 
 ----
@@ -181,7 +181,9 @@ You can also access locally a service of the VM forwarding the port to your mach
 When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the Dynamic Host Configuration Protocol (DHCP) address of the VMI. This routing makes it possible to also connect to a VMI with a port-forwarding connection.
 
 
+==== Multus 
 
+The Multus CNI plug-in acts similar to a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as attaching multiple network interfaces to pods in an OpenShift cluster.
 
 
 
