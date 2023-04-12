@@ -38,9 +38,6 @@ spec:
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
-            # runAsNonRoot: false
-            seccompProfile:
-              type: RuntimeDefault
             capabilities:
               drop:
               - ALL
@@ -49,6 +46,8 @@ spec:
       dnsPolicy: ClusterFirst
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
 ---
 kind: Service
 apiVersion: v1

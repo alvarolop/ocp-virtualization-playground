@@ -3,6 +3,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: support-tools
+  namespace: vms-test
   labels:
     app: support-tools
     app.kubernetes.io/component: support-tools
@@ -35,14 +36,24 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
 ---
 kind: Service
 apiVersion: v1
 metadata:
   name: support-tools
+  namespace: vms-test
   labels:
     app: support-tools
     app.kubernetes.io/component: support-tools
