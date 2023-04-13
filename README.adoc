@@ -183,7 +183,15 @@ When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the 
 
 ==== Multus 
 
-The Multus CNI plug-in acts similar to a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as attaching multiple network interfaces to pods in an OpenShift cluster.
+The Multus CNI plug-in acts as a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as attaching multiple network interfaces to pods in an OpenShift cluster.
+
+How to configure it?
+
+* **Network Attachment Definition**: A Namespaced object that exposes existing layer-2 network devices, such as bridges and switches, to VMs and pods.
+* **Node Network Configuration Policy**: A CRD of the `nmstate` operator describing the desired network configuration for Red Hat OpenShift nodes.
+
+
+NOTE: In order to apply this configuration only to Bare Metal nodes, we are labeling nodes with `usage: virtualization` in the MachineSet that we created in the first section. For more information, https://access.redhat.com/solutions/5802541[this KCS].
 
 
 
@@ -215,6 +223,27 @@ oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -
 ----
 
 
+== Annex: Using the NMstate operator
+
+The Kubernetes NMState Operator provides a Kubernetes API for performing *state-driven network configuration* across the OpenShift Container Platform cluster's nodes with NMState. 
+
+Red Hat OpenShift Virtualization uses the Kubernetes NMState Operator *to report on and configure node networking in a declarative way*. The Kubernetes NMstate Operator provides the components for declarative node networking in a Red Hat OpenShift cluster.
+
+You can install it by applying the following file:
+
+[source, bash]
+----
+oc apply -f ocp-installation/10-nmstate.yaml
+----
+
+After that, you can check the network configuration for each node using the following command:
+
+[source, bash]
+----
+oc get nns
+----
+
+NOTE: If you need more information about this topic, you can check the https://docs.openshift.com/container-platform/4.12/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html[official documentation] for the NMstate Operator.
 
 
 
