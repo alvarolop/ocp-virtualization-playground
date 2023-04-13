@@ -18,10 +18,12 @@ spec:
         machine.openshift.io/cluster-api-machine-role: ${ROLE} 
         machine.openshift.io/cluster-api-machine-type: ${ROLE} 
         machine.openshift.io/cluster-api-machineset: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${ZONE}
+        usage: virtualization
     spec:
       metadata:
         labels:
-          node-role.kubernetes.io/${ROLE}: "" 
+          node-role.kubernetes.io/${ROLE}: ""
+          usage: virtualization
       providerSpec:
         value:
           ami:
