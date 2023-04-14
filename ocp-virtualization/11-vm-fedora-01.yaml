@@ -4,13 +4,13 @@ objects:
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
-      name: $VM_NAME
+      name: ${VM_NAME}
       annotations:
-        description: "VM $VM_NAME"
+        description: "VM ${VM_NAME}"
       labels:
-        app: $VM_NAME
+        app: ${VM_NAME}
         os.template.kubevirt.io/fedora36: 'true'
-      namespace: $VM_PROJECT
+      namespace: ${VM_PROJECT}
     spec:
       running: true
       template:
@@ -20,20 +20,20 @@ objects:
             vm.kubevirt.io/os: fedora36
             vm.kubevirt.io/workload: server
           labels:
-            kubevirt.io/domain: $VM_NAME
+            kubevirt.io/domain: ${VM_NAME}
             kubevirt.io/size: small
-            app: $VM_NAME
+            app: ${VM_NAME}
         spec:
-          accessCredentials:
-          - sshPublicKey:
-              source:
-                secret:
-                  secretName: alvaro-pub-key 
-              propagationMethod:
-                configDrive: {}
+          # accessCredentials:
+          # - sshPublicKey:
+          #     source:
+          #       secret:
+          #         secretName: alvaro-pub-key 
+          #     propagationMethod:
+          #       configDrive: {}
           domain:
             cpu:
-              cores: 1
+              cores: 2
               sockets: 1
               threads: 1
             devices:
@@ -62,7 +62,7 @@ objects:
             resources:
               requests:
                 memory: 2Gi
-          hostname: $VM_NAME
+          hostname: ${VM_NAME}
           networks:
             - name: default
               pod: {}
@@ -71,27 +71,28 @@ objects:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
-            - cloudInitConfigDrive:
+            - cloudInitNoCloud:
                 userData: |-
                   #cloud-config
                   user: fedora
+                  password: fedora
                   chpasswd: { expire: False }
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
     metadata:
       labels:
-        app: $VM_NAME
+        app: ${VM_NAME}
         os.template.kubevirt.io/fedora36: 'true'
-      name: $VM_NAME
-      namespace: $VM_PROJECT
+      name: ${VM_NAME}
+      namespace: ${VM_PROJECT}
     spec:
       ports:
         - port: 8080
           protocol: TCP
           targetPort: 8080
       selector:
-        app: $VM_NAME
+        app: ${VM_NAME}
       type: ClusterIP
 parameters:
   - name: VM_PROJECT
