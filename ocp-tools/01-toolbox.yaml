@@ -1,72 +1,82 @@
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: support-tools
-  namespace: vms-test
-  labels:
-    app: support-tools
-    app.kubernetes.io/component: support-tools
-    app.kubernetes.io/instance: support-tools
-    app.kubernetes.io/name: support-tools
-    app.kubernetes.io/part-of: support-tools-app
-    app.openshift.io/runtime: shadowman
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: support-tools
-  template:
+apiVersion: template.openshift.io/v1
+kind: Template
+objects:
+  - kind: Deployment
+    apiVersion: apps/v1
     metadata:
+      name: ${POD_NAME}
+      namespace: ${POD_PROJECT}
       labels:
-        app: support-tools
-        deployment: support-tools
+        app: ${POD_NAME}
+        app.kubernetes.io/component: ${POD_NAME}
+        app.kubernetes.io/instance: ${POD_NAME}
+        app.kubernetes.io/name: ${POD_NAME}
+        app.kubernetes.io/part-of: ${POD_NAME}-app
+        app.openshift.io/runtime: shadowman
     spec:
-      containers:
-        - name: support-tools
-          image: registry.redhat.io/rhel8/support-tools:8.7-10
-          command:
-            - bash
-            - '-c'
-            - echo "Hello World!"; while true; do sleep 3600; done
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: Always
+      replicas: 1
+      selector:
+        matchLabels:
+          app: ${POD_NAME}
+      template:
+        metadata:
+          labels:
+            app: ${POD_NAME}
+            deployment: ${POD_NAME}
+        spec:
+          containers:
+            - name: ${POD_NAME}
+              image: registry.redhat.io/rhel8/support-tools:8.7-10
+              command:
+                - bash
+                - '-c'
+                - echo "Hello World!"; while true; do sleep 3600; done
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: Always
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+          restartPolicy: Always
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
-      dnsPolicy: ClusterFirst
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: support-tools
-  namespace: vms-test
-  labels:
-    app: support-tools
-    app.kubernetes.io/component: support-tools
-    app.kubernetes.io/instance: support-tools
-    app.kubernetes.io/name: support-tools
-    app.kubernetes.io/part-of: support-tools-app
-    app.openshift.io/runtime: shadowman
-spec:
-  ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 8080
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
-  selector:
-    app: support-tools
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      name: ${POD_NAME}
+      namespace: ${POD_PROJECT}
+      labels:
+        app: ${POD_NAME}
+        app.kubernetes.io/component: ${POD_NAME}
+        app.kubernetes.io/instance: ${POD_NAME}
+        app.kubernetes.io/name: ${POD_NAME}
+        app.kubernetes.io/part-of: ${POD_NAME}-app
+        app.openshift.io/runtime: shadowman
+    spec:
+      ports:
+        - protocol: TCP
+          port: 8080
+          targetPort: 8080
+      internalTrafficPolicy: Cluster
+      type: ClusterIP
+      selector:
+        app: ${POD_NAME}
+parameters:
+  - name: POD_PROJECT
+    description: "The project where the application will be deployed."
+    required: false
+    value: vms-test
+  - name: POD_NAME
+    description: "The application name."
+    required: false
+    value: support-tools
