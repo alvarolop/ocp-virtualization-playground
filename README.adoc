@@ -1,9 +1,9 @@
-= OpenShift Infra Playground
+= OpenShift Virtualization Playground
 Álvaro López Medina <alopezme@redhat.com>
 v1.0, 2023-02
 // Metadata
-:description: This repository provides basic information on how to deploy extra features on an OpenShift Container Platform installation, such as Openshift Virtualization, Openshift Data Foundation, etc.
-:keywords: openshift, odf, virtualization, red hat
+:description: This repository provides basic information about how to begin your journey with Openshift Virtualization on an OpenShift Container Platform installation.
+:keywords: openshift, virtualization, red hat
 // Create TOC wherever needed
 :toc: macro
 :sectanchors:
@@ -23,7 +23,7 @@ ifndef::env-github[]
 :icons: font
 endif::[]
 
-This repository provides basic information on how to deploy extra features on an OpenShift Container Platform installation, such as Openshift Virtualization, Openshift Data Foundation, etc.
+This repository provides basic information about how to begin your journey with Openshift Virtualization on an OpenShift Container Platform installation.
 
 // Create the Table of contents here
 toc::[]
@@ -34,15 +34,13 @@ toc::[]
 
 *OpenShift Virtualization* is an add-on to OpenShift Container Platform that allows you to *run and manage virtual machine workloads alongside container workloads*. More information https://docs.openshift.com/container-platform/4.12/virt/about-virt.html[here].
 
-*Red Hat OpenShift Data Foundation* is a provider of *agnostic persistent storage* for OpenShift Container Platform supporting *file, block, and object storage*, either in-house or in hybrid clouds. As a Red Hat storage solution, Red Hat OpenShift Data Foundation is completely integrated with OpenShift Container Platform for deployment, management, and monitoring. More information https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.12[here].
+
+NOTE: Red Hat OpenShift Kubernetes Engine is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. OpenShift Kubernetes Engine offers a subset of the features that OpenShift Container Platform offers. Openshift Virtualization is supported on OKE. More information https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[here].
 
 
-NOTE: Red Hat OpenShift Kubernetes Engine is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. OpenShift Kubernetes Engine offers a subset of the features that OpenShift Container Platform offers. More information https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[here].
+== OpenShift Virtualization Prerequisites
 
-
-== OpenShift Installation
-
-In order to be able to create VMs on OpenShift on AWS, you will need to add bare metal nodes to your OpenShift installation. For that, create the following Machine Set:
+In order to be able to create VMs on OpenShift on AWS, you will need to add bare metal nodes to your OpenShift installation. The following steps simplify the process of creating a Bare Metal MachineSet:
 
 
 1. Get the clusterID using the following command:
@@ -52,21 +50,13 @@ In order to be able to create VMs on OpenShift on AWS, you will need to add bare
 oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster
 ----
 +
-2. Customize the Machine Set:
+2. Create the Machine Set:
 +
 [source, bash]
 ----
-cat ocp-installation/01-baremetal-machineset-template.yaml | \
-ROLE=worker REGION=eu-west-3 ZONE=eu-west-3a PREFIX=metal AMI=ami-06f98f607a50937c6 \
-INFRASTRUCTURE_ID=$(oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster) \
-envsubst > ocp-installation/01-baremetal-machineset.yaml
-----
-+
-3. Create the Machine Set:
-+
-[source, bash]
-----
-oc apply -f ocp-installation/01-baremetal-machineset.yaml
+oc process -f ocp-installation/01-baremetal-machineset.yaml \
+-p INFRASTRUCTURE_ID=$(oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster) \
+| oc apply -f -
 ----
 
 .*AWS Instances*
@@ -81,12 +71,11 @@ For more information, check the https://docs.openshift.com/container-platform/4.
 
 
 
-== Openshift Virtualization
+== Openshift Virtualization Installation
 
 Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
 
-WARNING: The cluster must be installed on-premise, on bare metal with Red Hat Enterprise Linux CoreOS workers.
-
+WARNING: The cluster must be installed on-premise, on bare metal with Red Hat Enterprise Linux CoreOS workers. AWS is not supported yet.
 
 .*Disambiguation*
 [TIP]
@@ -95,8 +84,6 @@ WARNING: The cluster must be installed on-premise, on bare metal with Red Hat En
 * *IaaS* is a form of cloud computing that provides IT infrastructure.
 * *Hypervisor* is virtualization software that helps you to create and manage VMs.
 ====
-
-=== Installation
 
 1. Create the Project and OperatorGroup to install the operator:
 +
@@ -133,7 +120,7 @@ Click on `Create HyperConverged` button to create a default HyperConverged insta
 * [HPP] *HostPathProvisioner deployment* (HostPathProvisioners) to create virtual machines that use local node storage.
 
 
-=== Creating Virtual Machines
+== Creating your first Virtual Machine
 
 A *VM object* specifies a template to create a running instance of the VM inside your cluster. The running instance of a VM is a *virtual machine instance (VMI*), and it is executed and managed by a container located inside a pod. If a VMI is deleted, another instance is generated based on the VM object configuration.
 
@@ -172,7 +159,7 @@ You can also access locally a service of the VM forwarding the port to your mach
 
 
 
-=== Network Interfaces
+== Network Interfaces
 
 * *Default pod network*: To use the default pod network, the network interface must use the Masquerade binding method. A masquerade binding uses NAT to allow other pods in the cluster to communicate with the VMI. 
 * *Multus*: Connect a VM to multiple interfaces and external networks with the Container Networking Interface (CNI) plug-in, *Multus*. To connect to an external network, you must create a `linux-bridge` network attachment definition that exposes the layer-2 device to a specific namespace.
@@ -180,31 +167,84 @@ You can also access locally a service of the VM forwarding the port to your mach
 
 When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the Dynamic Host Configuration Protocol (DHCP) address of the VMI. This routing makes it possible to also connect to a VMI with a port-forwarding connection.
 
+Now, you have access to the pod network. Do you also want to add a second network to the VM? Great! You will have to use Multus, the NMstate operator and other great projects, so keep reading!
 
-==== Multus 
 
-The Multus CNI plug-in acts as a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as attaching multiple network interfaces to pods in an OpenShift cluster.
 
-How to configure it?
 
-* **Network Attachment Definition**: A Namespaced object that exposes existing layer-2 network devices, such as bridges and switches, to VMs and pods.
-* **Node Network Configuration Policy**: A CRD of the `nmstate` operator describing the desired network configuration for Red Hat OpenShift nodes.
+=== Multus 
 
+The Multus CNI plug-in acts as a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as *attaching multiple network interfaces* to pods in an OpenShift cluster.
+
+How to configure it? Use the **Network Attachment Definition**, which is a namespaced object that exposes existing layer-2 network devices, such as bridges and switches, to VMs and pods.
+
+
+[source, bash]
+----
+oc apply -f ocp-virtualization/21-networkAttachmentDefinition-external.yaml
+----
+
+
+
+
+
+
+
+
+
+
+
+
+=== The NMstate operator
+
+The Kubernetes NMState Operator provides a Kubernetes API for performing *state-driven network configuration* across the OpenShift Container Platform cluster's nodes with NMState. 
+
+Red Hat OpenShift Virtualization uses the Kubernetes NMState Operator *to report on and configure node networking in a declarative way*. The Kubernetes NMstate Operator provides the components for declarative node networking in a Red Hat OpenShift cluster.
+
+You can install it by applying the following file:
+
+[source, bash]
+----
+oc apply -f ocp-installation/10-nmstate.yaml
+----
+
+After that, it will be useful basically for three things:
+
+1. Check the network configuration for each node using the *Node Network State (NNS)*:
++
+[source, bash]
+----
+# Check all the network configurations:
+oc get nns
+# get the network configuration of an OCP node:
+oc get nns $NODE_NAME -o yaml
+----
++
+2. Apply new configuration to nodes based on a selector using the *Node Network Configuration Policy (NNCP)*:
++
+[source, bash]
+----
+oc apply -f ocp-virtualization/22-nncp-fedora.yaml
+----
++
+3. You can see the Configuration Policies with the following command:
++
+[source, bash]
+----
+oc get nodenetworkconfigurationpolicy.nmstate.io
+----
++
+4. Finally, after completed successfully, you will see a report in a new object, the *Node Network Configuration Enactment (NNCE)*:
++
+[source, bash]
+----
+oc get NodeNetworkConfigurationEnactment
+----
 
 NOTE: In order to apply this configuration only to Bare Metal nodes, we are labeling nodes with `usage: virtualization` in the MachineSet that we created in the first section. For more information, https://access.redhat.com/solutions/5802541[this KCS].
 
+NOTE: If you need more information about this topic, you can check the https://docs.openshift.com/container-platform/4.12/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html[official documentation] for the NMstate Operator.
 
-
-
-
-
-
-
-== Openshift Data Foundation
-
-
-
-== Openshift Logging
 
 
 
@@ -223,27 +263,7 @@ oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -
 ----
 
 
-== Annex: Using the NMstate operator
 
-The Kubernetes NMState Operator provides a Kubernetes API for performing *state-driven network configuration* across the OpenShift Container Platform cluster's nodes with NMState. 
-
-Red Hat OpenShift Virtualization uses the Kubernetes NMState Operator *to report on and configure node networking in a declarative way*. The Kubernetes NMstate Operator provides the components for declarative node networking in a Red Hat OpenShift cluster.
-
-You can install it by applying the following file:
-
-[source, bash]
-----
-oc apply -f ocp-installation/10-nmstate.yaml
-----
-
-After that, you can check the network configuration for each node using the following command:
-
-[source, bash]
-----
-oc get nns
-----
-
-NOTE: If you need more information about this topic, you can check the https://docs.openshift.com/container-platform/4.12/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html[official documentation] for the NMstate Operator.
 
 
 
@@ -255,11 +275,10 @@ You can deploy this container using the following script:
 
 [source, bash]
 ----
-cat ocp-tools/01-toolbox-template.yaml | \
-POD_PROJECT=vms-test POD_NAME=support-tools \
-envsubst > ocp-tools/01-toolbox.yaml
-
-oc apply -f ocp-tools/01-toolbox.yaml
+oc process -f ocp-tools/01-toolbox.yaml \
+-p POD_PROJECT=vms-test \
+-p POD_NAME=support-tools \
+| oc apply -f -
 ----
 
 
@@ -269,3 +288,4 @@ oc apply -f ocp-tools/01-toolbox.yaml
 
 * KCS: https://access.redhat.com/articles/6409731[Deploy OpenShift Virtualization on AWS metal instance types].
 * KCS: https://access.redhat.com/articles/6738351[Deploy OpenShift sandboxed containers on AWS Bare Metal nodes (Tech Preview)].
+* KCS: https://access.redhat.com/articles/6994974[OpenShift Virtualization - Tuning & Scaling Guide].
