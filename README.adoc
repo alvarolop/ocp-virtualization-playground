@@ -82,7 +82,7 @@ In general, you will have to access https://eu-west-3.console.aws.amazon.com/ec2
 * [Optional] Security Groups: You can add the `Security group for Kubernetes ELB` to your interface.
 
 Click on `Create network interface` and access the https://eu-west-3.console.aws.amazon.com/ec2/home?region=eu-west-3#Instances:instanceState=running[nodes section], click on the metal node and then on the `Networking` tab. Attach the new interface to it.
-====
+
 
 This is automated with the following script:
 [source, bash]
