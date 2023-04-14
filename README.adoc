@@ -71,6 +71,26 @@ For more information, check the https://docs.openshift.com/container-platform/4.
 
 
 
+=== Adding a second Network Interface to VM
+
+Before creating the Network Configuration in your Bare Metal node, it needs to have an extra Network Interface to use for that purpose. The documentation of how to do it is in the https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#working-with-enis[AWS documentation].
+
+In general, you will have to access https://eu-west-3.console.aws.amazon.com/ec2/home?region=eu-west-3#CreateNetworkInterface[the Network Interfaces configuration] for your current region (In my case eu-west-3) and create a Network interface using the following configuration:
+
+* Description: `Secondary network interface for bare metal node`.
+* Subnet: Select the private network for the same region of the bare metal node `eu-west-3`.
+* [Optional] Security Groups: You can add the `Security group for Kubernetes ELB` to your interface.
+
+Click on `Create network interface` and access the https://eu-west-3.console.aws.amazon.com/ec2/home?region=eu-west-3#Instances:instanceState=running[nodes section], click on the metal node and then on the `Networking` tab. Attach the new interface to it.
+====
+
+This is automated with the following script:
+[source, bash]
+----
+./ocp-tools/add-net-interface.sh ./aws-env-vars
+----
+
+
 == Openshift Virtualization Installation
 
 Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
@@ -137,7 +157,7 @@ oc process -f ocp-virtualization/10-vm-project.yaml | oc apply -f -
 +
 [source, bash]
 ----
-oc process -f ocp-virtualization/11-vm-fedora.yaml | oc apply -f -
+oc process -f ocp-virtualization/11-vm-fedora-01.yaml | oc apply -f -
 ----
 
 
@@ -161,29 +181,6 @@ You can also access locally a service of the VM forwarding the port to your mach
 When the VMI is provisioned, the `virt-launcher` pod routes IPv4 traffic to the Dynamic Host Configuration Protocol (DHCP) address of the VMI. This routing makes it possible to also connect to a VMI with a port-forwarding connection.
 
 Now, you have access to the pod network. Do you also want to add a second network to the VM? Great! You will have to use Multus, the NMstate operator and other great projects, so keep reading!
-
-
-
-
-=== Multus 
-
-The Multus CNI plug-in acts as a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as *attaching multiple network interfaces* to pods in an OpenShift cluster.
-
-How to configure it? Use the **Network Attachment Definition**, which is a namespaced object that exposes existing layer-2 network devices, such as bridges and switches, to VMs and pods.
-
-
-[source, bash]
-----
-oc apply -f ocp-virtualization/21-networkAttachmentDefinition-external.yaml
-----
-
-
-
-
-
-
-
-
 
 
 
@@ -217,7 +214,7 @@ oc get nns $NODE_NAME -o yaml
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/22-nncp-fedora.yaml
+oc apply -f ocp-virtualization/21-nncp-fedora.yaml
 ----
 +
 3. You can see the Configuration Policies with the following command:
@@ -233,10 +230,54 @@ oc get nodenetworkconfigurationpolicy.nmstate.io
 ----
 oc get NodeNetworkConfigurationEnactment
 ----
++
+5. If something is missconfigured, you can see the error message with the following command:
++
+[source, bash]
+----
+oc get nnce $NODE_NAME -o jsonpath='{.status.conditions[?(@.type=="Failing")].message}'
+----
 
 NOTE: In order to apply this configuration only to Bare Metal nodes, we are labeling nodes with `usage: virtualization` in the MachineSet that we created in the first section. For more information, https://access.redhat.com/solutions/5802541[this KCS].
 
 NOTE: If you need more information about this topic, you can check the https://docs.openshift.com/container-platform/4.12/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html[official documentation] for the NMstate Operator.
+
+
+
+
+
+
+
+=== Multus 
+
+The Multus CNI plug-in acts as a wrapper by calling other CNI plug-ins for advanced networking functionalities, such as *attaching multiple network interfaces* to pods in an OpenShift cluster.
+
+How to configure it? Use the **Network Attachment Definition**, which is a namespaced object that exposes existing layer-2 network devices, such as bridges and switches, to VMs and pods.
+
+
+[source, bash]
+----
+oc apply -f ocp-virtualization/22-network-fedora-external.yaml
+----
+
+Create the Virtual Machine:
++
+[source, bash]
+----
+oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
+oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
+----
+
+
+
+
+
+
+
+
+
+
+
 
 
 
