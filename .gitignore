@@ -1,3 +1,2 @@
-ocp-installation/01-baremetal-machineset.yaml
 ocp-virtualization/10-vm-project.yaml
 ocp-virtualization/11-vm-fedora.yaml
