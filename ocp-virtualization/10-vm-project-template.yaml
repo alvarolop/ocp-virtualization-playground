@@ -1,8 +1,0 @@
----
-apiVersion: project.openshift.io/v1
-kind: Project
-metadata:
-  name: $VM_PROJECT
-  annotations:
-    openshift.io/description: "Project to deploy different VM configurations"
-    openshift.io/display-name: "VMs Test Environment"

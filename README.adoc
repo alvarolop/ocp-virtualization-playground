@@ -130,21 +130,14 @@ The default templates are provided by Red Hat. These templates include settings 
 +
 [source, bash]
 ----
-cat ocp-virtualization/10-vm-project-template.yaml | \
-VM_PROJECT=vms-test envsubst > ocp-virtualization/10-vm-project.yaml
-
-oc apply -f ocp-virtualization/10-vm-project.yaml
+oc process -f ocp-virtualization/10-vm-project.yaml | oc apply -f - 
 ----
 +
 2. Create the Virtual Machine:
 +
 [source, bash]
 ----
-cat ocp-virtualization/11-vm-fedora-template.yaml | \
-VM_PROJECT=vms-test VM_NAME=fedora-01 \
-envsubst > ocp-virtualization/11-vm-fedora.yaml
-
-oc apply -f ocp-virtualization/11-vm-fedora.yaml
+oc process -f ocp-virtualization/11-vm-fedora.yaml | oc apply -f -
 ----
 
 
