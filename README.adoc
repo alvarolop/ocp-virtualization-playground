@@ -91,6 +91,13 @@ This is automated with the following script:
 ----
 
 
+Documentation:
+
+* https://docs.aws.amazon.com/cli/latest/reference/ec2/create-network-interface.html[AWS docs for create-network-interface].
+* https://docs.aws.amazon.com/cli/latest/reference/ec2/attach-network-interface.html[AWS docs for attach-network-interface].
+
+
+
 == Openshift Virtualization Installation
 
 Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
