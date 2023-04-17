@@ -1,0 +1,17 @@
+---
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  annotations:
+    description: Network definition to connect Fedora VMs
+    # k8s.v1.cni.cncf.io/resourceName: bridge.network.kubevirt.io/fedora-external
+  name: fedora-external
+spec:
+  config: '{
+    "name":"fedora-external",
+    "type":"cnv-bridge",
+    "cniVersion":"0.3.1",
+    "bridge":"br1",
+    "macspoofchk":true,
+    "ipam":{}
+    }'
