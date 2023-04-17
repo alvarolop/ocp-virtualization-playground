@@ -238,7 +238,7 @@ oc get nodenetworkconfigurationpolicy.nmstate.io
 oc get NodeNetworkConfigurationEnactment
 ----
 +
-5. If something is missconfigured, you can see the error message with the following command:
+5. If something is misconfigured, you can see the error message with the following command:
 +
 [source, bash]
 ----
@@ -249,6 +249,10 @@ NOTE: In order to apply this configuration only to Bare Metal nodes, we are labe
 
 NOTE: If you need more information about this topic, you can check the https://docs.openshift.com/container-platform/4.12/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html[official documentation] for the NMstate Operator.
 
+If you want to compare the configuration before and after setting the Node Network Configuration Policy, you can compare the files that contain the following outputs:
+
+* `examples/metal-node-nns-out-v01.yaml`: Before setting the configuration, there is no Bridge `br1`.
+* `examples/metal-node-nns-out-v02.yaml`: After setting the configuration, there is a Bridge named `br1`.
 
 
 
@@ -274,15 +278,6 @@ Create the Virtual Machine:
 oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
 oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
 ----
-
-
-
-
-
-
-
-
-
 
 
 
@@ -316,10 +311,8 @@ You can deploy this container using the following script:
 
 [source, bash]
 ----
-oc process -f ocp-tools/01-toolbox.yaml \
--p POD_PROJECT=vms-test \
--p POD_NAME=support-tools \
-| oc apply -f -
+oc process -f ocp-tools/01-toolbox.yaml -p POD_PROJECT=vms-test \
+-p POD_NAME=support-tools | oc apply -f -
 ----
 
 
