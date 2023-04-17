@@ -24,6 +24,7 @@ objects:
             kubevirt.io/size: small
             app: ${VM_NAME}
         spec:
+          # https://kubevirt.io/user-guide/virtual_machines/accessing_virtual_machines/
           # accessCredentials:
           # - sshPublicKey:
           #     source:
@@ -74,9 +75,13 @@ objects:
             - cloudInitNoCloud:
                 userData: |-
                   #cloud-config
+                  ssh_authorized_keys:
+                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDA66H7xHgj94dzEmhW4ngURgd+nIldwiHzCqKrFSH22jG+YiFqRZtgIO1MzapYWbH7GE1xqW3W4p0e/Tk2WrbQR4mjolgThRJjHPBsnT77h8vynzlj0lGIJEQdnhEUtKLgtDqbHyfbDJGYjET+kNKuZe58wRZ3h5zAbIbzOUoTxA13lp640TP1sBX4Il8SO7BWaIjtRsOcYnQZEjy8oZ0JWS7Q3eEKsC9sG7XA1RQrkC1e3fOqEDE2rYrNQ122s+RcTD0ymL2KFGnFmf9UsfFvyVTCQYyAFzTO5IVpM+SLlVzoZAPVgvlsm70MXb51fFmOTJEzvqJGLWKHcZHrPwlP alvaro@localhost.localdomain
+                  ssh_pwauth: True
                   user: fedora
                   password: fedora
-                  chpasswd: { expire: False }
+                  chpasswd:
+                    expire: false
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
