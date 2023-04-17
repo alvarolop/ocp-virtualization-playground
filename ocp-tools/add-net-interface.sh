@@ -19,6 +19,7 @@ SUBNET_ID=$(aws ec2 describe-subnets \
 
 echo "This is the SUBNET_ID: $SUBNET_ID"
 
+# The following command creates an interface in the same private region as the Metal instance is.
 NETWORK_INTERFACE_ID=$(aws ec2 create-network-interface \
     --region $AWS_DEFAULT_REGION \
     --subnet-id $SUBNET_ID \
@@ -34,6 +35,7 @@ echo "This is the NETWORK_INTERFACE_ID: $NETWORK_INTERFACE_ID"
 #     --filters Name=instance-type,Values=c5.metal \
 #     --query "Reservations[*].Instances[*].{Instance:InstanceId,Subnet:SubnetId}")
 
+# The following command retrieves the ID of the metal instance
 INSTANCE_ID=$(aws ec2 describe-instances \
     --region $AWS_DEFAULT_REGION \
     --filters Name=instance-type,Values=c5.metal \
@@ -42,6 +44,7 @@ INSTANCE_ID=$(aws ec2 describe-instances \
 
 echo "This is the INSTANCE_ID: $INSTANCE_ID"
 
+# The following command attaches the network interface to the metal instance 
 aws ec2 attach-network-interface \
     --region $AWS_DEFAULT_REGION \
     --network-interface-id $NETWORK_INTERFACE_ID \
