@@ -23,22 +23,20 @@ ifndef::env-github[]
 :icons: font
 endif::[]
 
-This repository provides basic information about how to begin your journey with Openshift Virtualization on an OpenShift Container Platform installation.
-
 // Create the Table of contents here
 toc::[]
 
 == Introduction
 
-*OpenShift Container Platform* is a cloud-based Kubernetes container platform. The foundation of OpenShift Container Platform is based on Kubernetes and therefore shares the same technology. It is designed to allow applications and the data centers that support them to expand from just a few machines and applications to thousands of machines that serve millions of clients. More information https://docs.openshift.com/container-platform/4.12/getting_started/openshift-overview.html[here].
+This repository provides basic information about how to begin your journey with Openshift Virtualization on an OpenShift Container Platform installation. *All the examples and configuration is prepared for an OCP installation on AWS*. 
 
 *OpenShift Virtualization* is an add-on to OpenShift Container Platform that allows you to *run and manage virtual machine workloads alongside container workloads*. More information https://docs.openshift.com/container-platform/4.12/virt/about-virt.html[here].
 
+.OpenShift Kubernetes Engine
+NOTE: https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[Red Hat OpenShift Kubernetes Engine] is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. Openshift Virtualization is supported on OKE.
 
-NOTE: Red Hat OpenShift Kubernetes Engine is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. OpenShift Kubernetes Engine offers a subset of the features that OpenShift Container Platform offers. Openshift Virtualization is supported on OKE. More information https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[here].
 
-
-== OpenShift Virtualization Prerequisites
+== Prerequisites for AWS
 
 In order to be able to create VMs on OpenShift on AWS, you will need to add bare metal nodes to your OpenShift installation. The following steps simplify the process of creating a Bare Metal MachineSet:
 
@@ -71,7 +69,7 @@ For more information, check the https://docs.openshift.com/container-platform/4.
 
 
 
-=== Adding a second Network Interface to VM
+=== Adding a second interface to the node
 
 Before creating the Network Configuration in your Bare Metal node, it needs to have an extra Network Interface to use for that purpose. The documentation of how to do it is in the https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#working-with-enis[AWS documentation].
 
@@ -98,7 +96,7 @@ Documentation:
 
 
 
-== Openshift Virtualization Installation
+== Installation
 
 Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
 
@@ -112,27 +110,18 @@ WARNING: The cluster must be installed on-premise, on bare metal with Red Hat En
 * *Hypervisor* is virtualization software that helps you to create and manage VMs.
 ====
 
-1. Create the Project and OperatorGroup to install the operator:
+1. Create the `Project`, an `OperatorGroup` for the OLM, and a `Subscription` to install the operator:
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/01-project.yaml
-oc apply -f ocp-virtualization/02-operatorgroup.yaml
-
+oc apply -f ocp-virtualization/01-install.yaml
 ----
 +
-2. Install the OpenShift Virtualization operator:
+2. Create the `HyperConverged` object, which deploys and manages OpenShift Virtualization and its components:
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/03-subscription.yaml
-----
-+
-3. Create the HyperConverged object, which deploys and manages OpenShift Virtualization and its components:
-+
-[source, bash]
-----
-oc apply -f ocp-virtualization/04-hyperconverged.yaml
+oc apply -f ocp-virtualization/02-hyperconverged.yaml
 ----
 
 If you install the operator using the web console, you will see the following messages during installation:
@@ -143,8 +132,12 @@ Click on `Create HyperConverged` button to create a default HyperConverged insta
 
 === Virtualization CRDs
 
+These are the CRDs that you can interact with in the `Installed Operators` section: 
+
 * [HC] *OpenShift Virtualization Deployment* (HyperConverged) to deploy and manage OpenShift Virtualization and its components, such as the `virt-controller` cluster-level component and the `virt-handler` host-level Daemonset.
-* [HPP] *HostPathProvisioner deployment* (HostPathProvisioners) to create virtual machines that use local node storage.
+* [HPP] *HostPathProvisioner deployment* (HostPathProvisioners) to create virtual machines that use local node storage. (Not used in this repo).
+
+As you can see, most of the CRDs are not here and you will find them in the new Dynamic Plugin navigation bar on the left of the Web Console. 
 
 
 == Creating your first Virtual Machine
@@ -168,14 +161,34 @@ oc process -f ocp-virtualization/11-vm-fedora-01.yaml | oc apply -f -
 ----
 
 
-.**Accessing the VM**
-[NOTE]
-====
-Now, you can SSH the VM using the following command `virtctl -n vms-test ssh fedora@fedora-01`.
 
-You can also access locally a service of the VM forwarding the port to your machine: `oc port-forward $VIRT_LAUNCHER_POD $REMOTE_PORT:$LOCAL_PORT -n $VM_PROJECT`
 
-====
+=== Accessing the VM
+
+The easiest way to SSH the VMs is using the *KubeVirt command line interface*. You can install it by downloading the binary from the OCP cluster or using the official the https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html[documentation].
+
+Now, you can SSH the VM using the following command:
+
+[source, bash]
+----
+virtctl -n vms-test ssh fedora@fedora-01
+----
+
+You can also access locally a service of the VM forwarding the port to your machine: 
+
+[source, bash]
+----
+oc port-forward $VIRT_LAUNCHER_POD $REMOTE_PORT:$LOCAL_PORT -n $VM_PROJECT
+----
+
+Finally, you can perform extra configuration to automatically add your SSH Public Key to the VM on startup. Check the https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html#virt-accessing-vmi-ssh_virt-accessing-vm-consoles[documentation] for more information. Use the following command to set the `authorization-keys` on the server:
+
+[source, console]
+----
+oc create secret generic user-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -n vms-test
+----
+
+
 
 
 
@@ -287,22 +300,6 @@ oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP
 
 :sectnums!:
 
-== Annex: SSH to VMs
-
-The easiest way to SSH the VMs is using the *KubeVirt command line interface*. You can install it by downloading the binary from the OCP cluster or using the official the https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html[documentation].
-
-In addition to using the CLI, the default virtual machines only accept public key authorization. Therefore, you will need to perform extra configuration steps in the VM creation. https://docs.openshift.com/container-platform/4.12/virt/virtual_machines/virt-accessing-vm-consoles.html#virt-accessing-vmi-ssh_virt-accessing-vm-consoles[Here] you can find extra documentation.
-
-[source, console]
-----
-oc create secret generic alvaro-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -n vms-test
-----
-
-
-
-
-
-
 == Annex: Testing container image
 
 In order to quickly deploy a container with tools to check connectivity, I normally use the UBI version of the *Red Hat Enterprise Linux Support Tools* which can be found in the https://catalog.redhat.com/software/containers/rhel8/support-tools/5ba3eaf9bed8bd6ee819b78b?container-tabs=overview[RH Container Catalog]. 
@@ -311,15 +308,15 @@ You can deploy this container using the following script:
 
 [source, bash]
 ----
-oc process -f ocp-tools/01-toolbox.yaml -p POD_PROJECT=vms-test \
--p POD_NAME=support-tools | oc apply -f -
+oc process -f ocp-tools/01-toolbox.yaml -p POD_PROJECT=vms-test | oc apply -f -
 ----
 
 
 
 
-== Annex: Other useful links
+== Additional documentation
 
 * KCS: https://access.redhat.com/articles/6409731[Deploy OpenShift Virtualization on AWS metal instance types].
 * KCS: https://access.redhat.com/articles/6738351[Deploy OpenShift sandboxed containers on AWS Bare Metal nodes (Tech Preview)].
 * KCS: https://access.redhat.com/articles/6994974[OpenShift Virtualization - Tuning & Scaling Guide].
+* RH Blog: https://cloud.redhat.com/blog/openshift-virtualization-on-amazon-web-services[OpenShift Virtualization on Amazon Web Services].
