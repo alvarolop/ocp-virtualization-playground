@@ -29,7 +29,7 @@ objects:
           # - sshPublicKey:
           #     source:
           #       secret:
-          #         secretName: alvaro-pub-key 
+          #         secretName: user-pub-key 
           #     propagationMethod:
           #       configDrive: {}
           domain:
