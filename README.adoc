@@ -192,7 +192,9 @@ oc create secret generic user-pub-key --from-file=key1=$HOME/.ssh/id_rsa.pub -n 
 
 
 
-== Network Interfaces
+== Networking
+
+You can connect a VM to three different types of networks:
 
 * *Default pod network*: To use the default pod network, the network interface must use the Masquerade binding method. A masquerade binding uses NAT to allow other pods in the cluster to communicate with the VMI. 
 * *Multus*: Connect a VM to multiple interfaces and external networks with the Container Networking Interface (CNI) plug-in, *Multus*. To connect to an external network, you must create a `linux-bridge` network attachment definition that exposes the layer-2 device to a specific namespace.
@@ -285,7 +287,7 @@ oc apply -f ocp-virtualization/22-network-fedora-external.yaml
 ----
 
 Create the Virtual Machine:
-+
+
 [source, bash]
 ----
 oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
