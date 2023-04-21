@@ -295,6 +295,107 @@ oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP
 ----
 
 
+== Storage
+
+Red Hat OpenShift Virtualization provides several mechanisms to manage the VM disks. It introduces new resource types to facilitate the process of creating the PVC with optimal parameters for VM disks and copying the disk image into the resulting PV:
+
+* *StorageProfile*: For each storage class, a StorageProfile resource gives default values optimized for VM disks. As a developer, when you use a storage profile to prepare a VM disk, the only parameter that you must provide is the disk size.
+
+* *DataVolume*: A DataVolume resource describes a VM disk. It groups the PVC definition and the details of the disk image to inject into the PV.
+
+
+=== Creating a VM Disk using a Data Volume
+
+DataVolume resources have two parts:
+
+* The *storage profile* specification, which provides the details of the PVC to create. You only need to specify the disk size.
+* The *source image* details, which provides the disk image to inject into the PV.
+
+==== Disk type
+
+The disk type inside the VM depends on the interface that you select when you attach the data volume:
+
+* `scsi` interface: Standard SCSI device. Linux systems name it with the `/dev/sdX` format.
+* `virtio` interface: [Optimal performance] Linux systems name it with the `/dev/vdX` format. Some operating systems do not provide that driver by default.
+
+NOTE: When you hot plug a disk to a running VM, `scsi` is the only available interface.
+
+==== Data Volume Source
+
+The source section of a DataVolume resource provides the details of the disk image to inject into the persistent volume (PV).
+
+* Blank (creates PVC).
+* Import via URL (creates PVC).
+* Use an existing PVC.
+* Clone existing PVC (creates PVC).
+* Import via Registry (creates PVC).
+* Container (ephemeral).
+
+==== External Storage
+
+* Connect the storage from inside the VM. You can choose this solution for storage that you access through the network.
+* Connect the storage through a Kubernetes PV and then attach the volume as a VM disk. This is the Kubernetes way.
+
+.Example of PV using iscsi
+[source, yaml]
+----
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: example
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Block
+  claimRef:
+    name: websrv1-staticimgs
+    namespace: vm-project
+# Option 1: iscsi
+  iscsi:
+     targetPortal: 
+     iqn: 
+     lun: 0
+     initiatorName: 
+# Option 2: NFS
+  nfs:
+    path: /exports-ocp/disk
+    server: $IP
+# Option 3: Fiber Channel
+  fc:
+    targetWWNs:
+      - ""
+    lun: 0
+----
+
+.Example of PV using NFS
+[source, yaml]
+----
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  claimRef:
+    name: websrv1-logs
+    namespace: vm-project
+  nfs:
+    path: /exports-ocp/disk
+    server: $IP
+----
+
+
+
+
+
+
+
 
 
 
