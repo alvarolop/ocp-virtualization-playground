@@ -336,7 +336,7 @@ The source section of a DataVolume resource provides the details of the disk ima
 * Connect the storage from inside the VM. You can choose this solution for storage that you access through the network.
 * Connect the storage through a Kubernetes PV and then attach the volume as a VM disk. This is the Kubernetes way.
 
-.Example of PV using iscsi
+.Example of PV configuration
 [source, yaml]
 ----
 apiVersion: v1
@@ -367,27 +367,6 @@ spec:
     targetWWNs:
       - ""
     lun: 0
-----
-
-.Example of PV using NFS
-[source, yaml]
-----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-pv
-spec:
-  capacity:
-    storage: 20Gi
-  accessModes:
-    - ReadWriteMany
-  volumeMode: Filesystem
-  claimRef:
-    name: websrv1-logs
-    namespace: vm-project
-  nfs:
-    path: /exports-ocp/disk
-    server: $IP
 ----
 
 
