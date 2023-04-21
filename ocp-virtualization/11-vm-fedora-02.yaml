@@ -1,5 +1,19 @@
 apiVersion: template.openshift.io/v1
 kind: Template
+metadata:
+  name: fedora-02
+  namespace: openshift
+  labels:
+    template.kubevirt.io/type: vm
+    os.template.kubevirt.io/fedora36: 'true'
+    workload.template.kubevirt.io/server: 'true'
+  annotations:
+    name.os.template.kubevirt.io/fedora36: Fedora 36
+    description: Template to deploy a basic Fedora connected to the Pod Network and a secondary network configured using Multus. No persistence configured.
+    openshift.io/display-name: Fedora VM 02
+    openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
+    template.kubevirt.io/provider: Alvaro
+    iconClass: icon-fedora
 objects:
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
