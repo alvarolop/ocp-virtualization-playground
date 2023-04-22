@@ -57,31 +57,31 @@ This repository contains some basic examples of VM configuration for Openshift V
 | Fedora-01
 a|{yes}Pod Network
 
-{no} Multus
-| {no} DataVolume
-a| {no} Secrets
+{no}Multus
+| {no}DataVolume
+a| {no}Secrets
 
-{no} ConfigMap
+{no}ConfigMap
 |link:ocp-virtualization/11-vm-fedora-01.yaml[Click here]
 
 | Fedora-02
 a| {yes}Pod Network
 
-{yes} Multus
-| {no} DataVolume
-a| {no} Secrets
+{yes}Multus
+| {no}DataVolume
+a| {no}Secrets
 
-{no} ConfigMap
+{no}ConfigMap
 |link:ocp-virtualization/11-vm-fedora-02.yaml[Click here]
 
 | Fedora-03
 a| {yes}Pod Network
 
-{yes} Multus
-| {yes} DataVolume
-a| {yes} Secrets
+{yes}Multus
+| {yes}DataVolume
+a| {yes}Secrets
 
-{yes} ConfigMap
+{yes}ConfigMap
 |link:ocp-virtualization/11-vm-fedora-03.yaml[Click here]
 |===
 
