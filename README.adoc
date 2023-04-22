@@ -28,12 +28,56 @@ toc::[]
 
 == Introduction
 
-This repository provides basic information about how to begin your journey with Openshift Virtualization on an OpenShift Container Platform installation. *All the examples and configuration is prepared for an OCP installation on AWS*. 
+This repository provides basic information about how to begin your journey with Openshift Virtualization on an OpenShift Container Platform installation. *All the examples and configuration are prepared for an OCP installation on AWS*. 
 
 *OpenShift Virtualization* is an add-on to OpenShift Container Platform that allows you to *run and manage virtual machine workloads alongside container workloads*. More information https://docs.openshift.com/container-platform/4.12/virt/about-virt.html[here].
 
 .OpenShift Kubernetes Engine
 NOTE: https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[Red Hat OpenShift Kubernetes Engine] is a product offering from Red Hat that lets you use an enterprise-class Kubernetes platform as a production platform for launching containers. Openshift Virtualization is supported on OKE.
+
+
+== TL;DR
+
+This repository contains some basic examples of VM configuration for Openshift Virtualization. Maybe you have already configured it and just want to use the VMs in your deployments. If this is the case, please, take a look directly at the VM configurations:
+
+[cols="5*",options="header"]
+|===
+|Template
+|Networking
+|Storage
+|Configuration
+|Location
+
+| Fedora-01
+a| icon:check[]Pod Network
+
+icon:times[] Multus
+| icon:times[] DataVolume
+a| icon:times[] Secrets
+
+icon:times[] ConfigMap
+|link:ocp-virtualization/11-vm-fedora-01.yaml[Click here]
+
+| Fedora-02
+a| icon:check[]Pod Network
+
+icon:check[] Multus
+| icon:times[] DataVolume
+a| icon:times[] Secrets
+
+icon:times[] ConfigMap
+|link:ocp-virtualization/11-vm-fedora-02.yaml[Click here]
+
+| Fedora-03
+a| icon:check[]Pod Network
+
+icon:check[] Multus
+| icon:check[] DataVolume
+a| icon:check[] Secrets
+
+icon:check[] ConfigMap
+|link:ocp-virtualization/11-vm-fedora-03.yaml[Click here]
+|===
 
 
 == Prerequisites for AWS
@@ -286,6 +330,9 @@ How to configure it? Use the **Network Attachment Definition**, which is a names
 oc apply -f ocp-virtualization/22-network-fedora-external.yaml
 ----
 
+
+=== Creating a VM attached to 2 Networks
+
 Create the Virtual Machine:
 
 [source, bash]
@@ -293,6 +340,9 @@ Create the Virtual Machine:
 oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
 oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
 ----
+
+
+
 
 
 == Storage
@@ -376,15 +426,11 @@ spec:
 
 
 
-
-
-
-
 :sectnums!:
 
 == Annex: Testing container image
 
-In order to quickly deploy a container with tools to check connectivity, I normally use the UBI version of the *Red Hat Enterprise Linux Support Tools* which can be found in the https://catalog.redhat.com/software/containers/rhel8/support-tools/5ba3eaf9bed8bd6ee819b78b?container-tabs=overview[RH Container Catalog]. 
+To quickly deploy a container with tools to check connectivity, I normally use the UBI version of the *Red Hat Enterprise Linux Support Tools* which can be found in the https://catalog.redhat.com/software/containers/rhel8/support-tools/5ba3eaf9bed8bd6ee819b78b?container-tabs=overview[RH Container Catalog]. 
 
 You can deploy this container using the following script:
 
