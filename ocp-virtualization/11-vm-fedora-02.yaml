@@ -19,12 +19,12 @@ objects:
     kind: VirtualMachine
     metadata:
       name: ${VM_NAME}
+      namespace: ${VM_PROJECT}
       annotations:
         description: "VM ${VM_NAME}"
       labels:
         app: ${VM_NAME}
         os.template.kubevirt.io/fedora36: 'true'
-      namespace: ${VM_PROJECT}
     spec:
       running: true
       template:

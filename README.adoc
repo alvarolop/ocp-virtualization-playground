@@ -50,39 +50,50 @@ This repository contains some basic examples of VM configuration for Openshift V
 |===
 |Template
 |Networking
-|Storage
 |Configuration
+|Storage
 |Location
 
 | Fedora-01
 a|{yes}Pod Network
 
 {no}Multus
-| {no}DataVolume
 a| {no}Secrets
 
 {no}ConfigMap
+| {no}DataVolume
 |link:ocp-virtualization/11-vm-fedora-01.yaml[Click here]
 
 | Fedora-02
 a| {yes}Pod Network
 
 {yes}Multus
-| {no}DataVolume
 a| {no}Secrets
 
 {no}ConfigMap
+| {no}DataVolume
 |link:ocp-virtualization/11-vm-fedora-02.yaml[Click here]
 
 | Fedora-03
 a| {yes}Pod Network
 
 {yes}Multus
-| {yes}DataVolume
 a| {yes}Secrets
 
 {yes}ConfigMap
+| {no}DataVolume
 |link:ocp-virtualization/11-vm-fedora-03.yaml[Click here]
+
+| Fedora-04
+a| {yes}Pod Network
+
+{yes}Multus
+a| {yes}Secrets
+
+{yes}ConfigMap
+| {yes}DataVolume
+|link:ocp-virtualization/11-vm-fedora-04.yaml[Click here]
+
 |===
 
 
@@ -348,6 +359,21 @@ oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP
 ----
 
 
+== Application Configuration
+
+Many applications require configuration using some combination of configuration files, command line arguments, and environment variables. Both `ConfigMaps` and `Secrets` are used to provide configuration settings and credentials to Pods.
+
+The following template shows how to create a Secret and a ConfigMap and mount it as a file inside the VM:
+
+[source, bash]
+----
+oc process -f ocp-virtualization/11-vm-fedora-03.yaml -p VM_NAME=fedora-04 -p IP_ADDRESS="192.168.51.152/24" | oc apply -f -
+----
+
+
+
+
+
 
 
 
@@ -426,6 +452,15 @@ spec:
 ----
 
 
+=== Creating a VM with Storage and 2 Networks
+
+
+[source, bash]
+----
+oc process -f ocp-virtualization/11-vm-fedora-04.yaml -p VM_NAME=fedora-05 -p IP_ADDRESS="192.168.51.153/24" | oc apply -f -
+----
+
+TODO: Add a DataVolume to the previous template.
 
 
 

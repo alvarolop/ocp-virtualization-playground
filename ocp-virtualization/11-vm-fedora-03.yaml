@@ -1,20 +1,40 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fedora-01
-  namespace: openshift
+  name: fedora-03
   labels:
     template.kubevirt.io/type: vm
     os.template.kubevirt.io/fedora36: 'true'
     workload.template.kubevirt.io/server: 'true'
   annotations:
     name.os.template.kubevirt.io/fedora36: Fedora 36
-    description: Template to deploy a basic Fedora only connected to the Pod Network and without persistence configured.
-    openshift.io/display-name: Fedora VM 01
+    description: Template to deploy a basic Fedora connected to the Pod Network and a secondary network configured using Multus. It also configures persistence based on a Kubernetes PersistentVolume.
+    openshift.io/display-name: Fedora VM 03
     openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
     template.kubevirt.io/provider: Alvaro
     iconClass: icon-fedora
 objects:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${VM_NAME}-secret
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    type: Opaque 
+    stringData: 
+      secret.txt: |-     
+        This file contains secret information
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: ${VM_NAME}-config
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    data:
+      config.txt: |-
+        This file contains configuration information
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
@@ -59,10 +79,23 @@ objects:
                 - disk:
                     bus: virtio
                   name: cloudinitdisk
+                # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#configmap
+                - disk: {}
+                  name: configmap-disk
+                  # set serial
+                  serial: CONFIG01
+                  # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#secret
+                - disk: {}
+                  name: secret-disk
+                  # set serial
+                  serial: SECRET01
               interfaces:
                 - masquerade: {}
                   model: virtio
                   name: default
+                - bridge: {}
+                  name: nic-0
+                  model: virtio
               networkInterfaceMultiqueue: true
               rng: {}
             features:
@@ -81,8 +114,17 @@ objects:
           networks:
             - name: default
               pod: {}
+            - name: nic-0
+              multus:
+                networkName: fedora-external
           terminationGracePeriodSeconds: 180
           volumes:
+            - name: configmap-disk
+              configMap:
+                name: ${VM_NAME}-config
+            - name: secret-disk
+              secret:
+                secretName: ${VM_NAME}-secret
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
@@ -96,6 +138,17 @@ objects:
                   password: fedora
                   chpasswd:
                     expire: false
+                  bootcmd:
+                    # mount the disks
+                    - "mkdir /mnt/{app-config,app-secret}"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep CONFIG01 | cut -f1 -d' ') /mnt/app-config"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep SECRET01 | cut -f1 -d' ') /mnt/app-secret"
+                networkData: |
+                  version: 2
+                  ethernets:
+                    eth1:
+                      addresses:
+                      - ${IP_ADDRESS}
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
@@ -121,5 +174,8 @@ parameters:
   - name: VM_NAME
     description: "The name of the VM deployment."
     required: false
-    value: fedora-01
-    
+    value: fedora-02
+  - name: IP_ADDRESS
+    description: "The IP address for the secondary network."
+    required: false
+    value: 192.168.51.150/24
