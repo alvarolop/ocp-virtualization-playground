@@ -18,9 +18,15 @@ ifdef::env-github[]
 :important-caption: :heavy_exclamation_mark:
 :caution-caption: :fire:
 :warning-caption: :warning:
+// Icons for GitHub
+:yes: :heavy_check_mark:
+:no: :x:
 endif::[]
 ifndef::env-github[]
 :icons: font
+// Icons not for GitHub
+:yes: icon:check[]
+:no: icon:times[]
 endif::[]
 
 // Create the Table of contents here
@@ -38,7 +44,7 @@ NOTE: https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[
 
 == TL;DR
 
-This repository contains some basic examples of VM configuration for Openshift Virtualization. Maybe you have already configured it and just want to use the VMs in your deployments. If this is the case, please, take a look directly at the VM configurations:
+This repository contains some basic examples of VM configuration for Openshift Virtualization. Maybe you have already configured it and just want to use the VMs in your deployments. If this is the case, please, take a look directly at the VM configurations: {no}
 
 [cols="5*",options="header"]
 |===
@@ -49,33 +55,33 @@ This repository contains some basic examples of VM configuration for Openshift V
 |Location
 
 | Fedora-01
-a| icon:check[]Pod Network
+a|{yes}Pod Network
 
-icon:times[] Multus
-| icon:times[] DataVolume
-a| icon:times[] Secrets
+{no} Multus
+| {no} DataVolume
+a| {no} Secrets
 
-icon:times[] ConfigMap
+{no} ConfigMap
 |link:ocp-virtualization/11-vm-fedora-01.yaml[Click here]
 
 | Fedora-02
-a| icon:check[]Pod Network
+a| {yes}Pod Network
 
-icon:check[] Multus
-| icon:times[] DataVolume
-a| icon:times[] Secrets
+{yes} Multus
+| {no} DataVolume
+a| {no} Secrets
 
-icon:times[] ConfigMap
+{no} ConfigMap
 |link:ocp-virtualization/11-vm-fedora-02.yaml[Click here]
 
 | Fedora-03
-a| icon:check[]Pod Network
+a| {yes}Pod Network
 
-icon:check[] Multus
-| icon:check[] DataVolume
-a| icon:check[] Secrets
+{yes} Multus
+| {yes} DataVolume
+a| {yes} Secrets
 
-icon:check[] ConfigMap
+{yes} ConfigMap
 |link:ocp-virtualization/11-vm-fedora-03.yaml[Click here]
 |===
 
