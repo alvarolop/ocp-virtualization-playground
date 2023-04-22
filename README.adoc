@@ -44,9 +44,9 @@ NOTE: https://docs.openshift.com/container-platform/4.12/welcome/oke_about.html[
 
 == TL;DR
 
-This repository contains some basic examples of VM configuration for Openshift Virtualization. Maybe you have already configured it and just want to use the VMs in your deployments. If this is the case, please, take a look directly at the VM configurations: {no}
+This repository contains some basic examples of VM configuration for Openshift Virtualization. Maybe you have already configured it and just want to use the VMs in your deployments. If this is the case, please, take a look directly at the VM configurations:
 
-[cols="5*",options="header"]
+[cols="5*",options="header",width=90%,caption="VM Templates",role=center]
 |===
 |Template
 |Networking
