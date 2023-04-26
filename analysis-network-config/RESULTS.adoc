@@ -11,45 +11,68 @@ v1.0, 2023-02
 |Comments
 |Results
 
-| Fedora-01
-a|{yes}Pod Network
+|link:90-vm-fedora.yaml[Fedora-90] 
+|Initial template. Same as Fedora VM 02.
+|PodNet(default) + Multus(nic-1)
+|link:90-vm-fedora.txt[Results]
 
-{no}Multus
-a| {no}Secrets
+|link:91-vm-fedora.yaml[Fedora-91] 
+|
+|
+|link:91-vm-fedora.txt[Results]
 
-{no}ConfigMap
-| {no}DataVolume
-|link:virt-vms/01-vm-fedora.yaml[Click here]
+|link:92-vm-fedora.yaml[Fedora-92] 
+|
+|
+|link:92-vm-fedora.txt[Results]
 
-| Fedora-02
-a| {yes}Pod Network
+|link:93-vm-fedora.yaml[Fedora-93] 
+|
+|
+|link:93-vm-fedora.txt[Results]
 
-{yes}Multus
-a| {no}Secrets
+|link:94-vm-fedora.yaml[Fedora-94] 
+|
+|
+|link:94-vm-fedora.txt[Results]
 
-{no}ConfigMap
-| {no}DataVolume
-|link:virt-vms/02-vm-fedora.yaml[Click here]
+|link:95-vm-fedora.yaml[Fedora-95] 
+|
+|
+|link:95-vm-fedora.txt[Results]
 
-| Fedora-03
-a| {yes}Pod Network
-
-{yes}Multus
-a| {yes}Secrets
-
-{yes}ConfigMap
-| {no}DataVolume
-|link:virt-vms/03-vm-fedora.yaml[Click here]
-
-| Fedora-04
-a| {yes}Pod Network
-
-{yes}Multus
-a| {yes}Secrets
-
-{yes}ConfigMap
-| {yes}DataVolume
-|link:virt-vms/04-vm-fedora.yaml[Click here]
+|link:96-vm-fedora.yaml[Fedora-96] 
+|
+|
+|link:96-vm-fedora.txt[Results]
 
 |===
 
+
+
+== Create the VMs
+
+[source, bash]
+---
+oc process -f analysis-network-config/90-vm-fedora.yaml | oc apply -f -
+---
+
+
+== Get the Network configuration
+
+[source, bash]
+---
+virtctl ssh --local-ssh-opts "-o StrictHostKeyChecking=accept-new" -c 'echo -e "########\n# IP A #\n########\n"; ip a; echo -e "\n############\n# IP ROUTE #\n############\n"; ip route' fedora@fedora-93 > analysis-network-config/results-93.txt
+---
+
+
+== Automated process
+
+
+[source, bash]
+---
+# Create the VMs
+for i in {0..6}; do oc process -f analysis-network-config/9${i}-vm-fedora.yaml | oc apply -f -; done
+# Get the results
+for i in {0..6}; do virtctl ssh --local-ssh-opts "-o StrictHostKeyChecking=accept-new" -c 'echo -e "########\n# IP A #\n########\n"; ip a; echo -e "\n############\n# IP ROUTE #\n############\n"; ip route' fedora@fedora-9${i} > analysis-network-config/results-9${i}.txt; done
+---

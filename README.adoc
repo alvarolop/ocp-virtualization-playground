@@ -486,7 +486,9 @@ oc process -f ocp-tools/01-toolbox.yaml -p POD_PROJECT=vms-test | oc apply -f -
 
 == Analysis: Networking configuration
 
-In some cases, networking configuration could be tricky. In this link:analysis-network-config/RESULTS.adoc[section], I compare several VM configuration combinations and its real configuration in the machine.
+In some cases, networking configuration could be tricky. That's why in this document I compare several VM configuration combinations and their real configuration in the machine.
+
+>> link:analysis-network-config/RESULTS.adoc[Click Here] <<
 
 
 

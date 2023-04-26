@@ -1,7 +1,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fedora-90
+  name: fedora-95
   labels:
     template.kubevirt.io/type: vm
     os.template.kubevirt.io/fedora36: 'true'
@@ -59,12 +59,12 @@ objects:
                     bus: virtio
                   name: cloudinitdisk
               interfaces:
-                - masquerade: {}
-                  model: virtio
-                  name: default
                 - bridge: {}
                   name: nic-1
                   model: virtio
+                # - masquerade: {}
+                #   model: virtio
+                #   name: nic-2
               networkInterfaceMultiqueue: true
               rng: {}
             features:
@@ -81,11 +81,11 @@ objects:
                 memory: 2Gi
           hostname: ${VM_NAME}
           networks:
-            - name: default
-              pod: {}
             - name: nic-1
               multus:
                 networkName: fedora-external
+            # - name: nic-2
+            #   pod: {}
           terminationGracePeriodSeconds: 180
           volumes:
             - name: rootdisk
@@ -104,7 +104,7 @@ objects:
                 networkData: |
                   version: 2
                   ethernets:
-                    eth1:
+                    eth0:
                       addresses:
                       - ${IP_ADDRESS}
               name: cloudinitdisk
@@ -132,8 +132,8 @@ parameters:
   - name: VM_NAME
     description: "The name of the VM deployment."
     required: false
-    value: fedora-90
+    value: fedora-95
   - name: IP_ADDRESS
     description: "The IP address for the secondary network."
     required: false
-    value: 192.168.51.200/24
+    value: 192.168.51.205/24
