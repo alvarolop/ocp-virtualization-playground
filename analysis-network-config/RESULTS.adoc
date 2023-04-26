@@ -1,0 +1,55 @@
+= Analysis: Network Configuration
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-02
+
+== Introduction
+
+[cols="4*",options="header",width=100%]
+|===
+|Template
+|Changes
+|Comments
+|Results
+
+| Fedora-01
+a|{yes}Pod Network
+
+{no}Multus
+a| {no}Secrets
+
+{no}ConfigMap
+| {no}DataVolume
+|link:virt-vms/01-vm-fedora.yaml[Click here]
+
+| Fedora-02
+a| {yes}Pod Network
+
+{yes}Multus
+a| {no}Secrets
+
+{no}ConfigMap
+| {no}DataVolume
+|link:virt-vms/02-vm-fedora.yaml[Click here]
+
+| Fedora-03
+a| {yes}Pod Network
+
+{yes}Multus
+a| {yes}Secrets
+
+{yes}ConfigMap
+| {no}DataVolume
+|link:virt-vms/03-vm-fedora.yaml[Click here]
+
+| Fedora-04
+a| {yes}Pod Network
+
+{yes}Multus
+a| {yes}Secrets
+
+{yes}ConfigMap
+| {yes}DataVolume
+|link:virt-vms/04-vm-fedora.yaml[Click here]
+
+|===
+
