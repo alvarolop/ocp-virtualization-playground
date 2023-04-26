@@ -62,7 +62,7 @@ a| {no}Secrets
 
 {no}ConfigMap
 | {no}DataVolume
-|link:ocp-virtualization/11-vm-fedora-01.yaml[Click here]
+|link:virt-vms/01-vm-fedora.yaml[Click here]
 
 | Fedora-02
 a| {yes}Pod Network
@@ -72,7 +72,7 @@ a| {no}Secrets
 
 {no}ConfigMap
 | {no}DataVolume
-|link:ocp-virtualization/11-vm-fedora-02.yaml[Click here]
+|link:virt-vms/02-vm-fedora.yaml[Click here]
 
 | Fedora-03
 a| {yes}Pod Network
@@ -82,7 +82,7 @@ a| {yes}Secrets
 
 {yes}ConfigMap
 | {no}DataVolume
-|link:ocp-virtualization/11-vm-fedora-03.yaml[Click here]
+|link:virt-vms/03-vm-fedora.yaml[Click here]
 
 | Fedora-04
 a| {yes}Pod Network
@@ -92,7 +92,7 @@ a| {yes}Secrets
 
 {yes}ConfigMap
 | {yes}DataVolume
-|link:ocp-virtualization/11-vm-fedora-04.yaml[Click here]
+|link:virt-vms/04-vm-fedora.yaml[Click here]
 
 |===
 
@@ -175,14 +175,21 @@ WARNING: The cluster must be installed on-premise, on bare metal with Red Hat En
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/01-install.yaml
+oc apply -f virt-installation/01-subscription.yaml
 ----
 +
 2. Create the `HyperConverged` object, which deploys and manages OpenShift Virtualization and its components:
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/02-hyperconverged.yaml
+oc apply -f virt-installation/02-hyperconverged.yaml
+----
++
+3. Create the Project to deploy the VMs:
++
+[source, bash]
+----
+oc process -f virt-installation/10-project.yaml | oc apply -f - 
 ----
 
 If you install the operator using the web console, you will see the following messages during installation:
@@ -190,6 +197,9 @@ If you install the operator using the web console, you will see the following me
 image::ocp-virt-installation.png[]
 
 Click on `Create HyperConverged` button to create a default HyperConverged instance to be able to create Virtual Machines.
+
+
+
 
 === Virtualization CRDs
 
@@ -201,24 +211,17 @@ These are the CRDs that you can interact with in the `Installed Operators` secti
 As you can see, most of the CRDs are not here and you will find them in the new Dynamic Plugin navigation bar on the left of the Web Console. 
 
 
+
+
 == Creating your first Virtual Machine
 
 A *VM object* specifies a template to create a running instance of the VM inside your cluster. The running instance of a VM is a *virtual machine instance (VMI*), and it is executed and managed by a container located inside a pod. If a VMI is deleted, another instance is generated based on the VM object configuration.
 
-The default templates are provided by Red Hat. These templates include settings to create generic systems with networking, users, and storage preconfigured.
+The default templates are provided by Red Hat. These templates include settings to create generic systems with networking, users, and storage preconfigured. Create the Virtual Machine:
 
-1. Create the Project to deploy the VM:
-+
 [source, bash]
 ----
-oc process -f ocp-virtualization/10-vm-project.yaml | oc apply -f - 
-----
-+
-2. Create the Virtual Machine:
-+
-[source, bash]
-----
-oc process -f ocp-virtualization/11-vm-fedora-01.yaml | oc apply -f -
+oc process -f virt-vms/01-vm-fedora.yaml | oc apply -f -
 ----
 
 
@@ -297,7 +300,7 @@ oc get nns $NODE_NAME -o yaml
 +
 [source, bash]
 ----
-oc apply -f ocp-virtualization/21-nncp-fedora.yaml
+oc apply -f virt-network/21-nncp-fedora.yaml
 ----
 +
 3. You can see the Configuration Policies with the following command:
@@ -344,7 +347,7 @@ How to configure it? Use the **Network Attachment Definition**, which is a names
 
 [source, bash]
 ----
-oc apply -f ocp-virtualization/22-network-fedora-external.yaml
+oc apply -f virt-network/22-network-fedora-external.yaml
 ----
 
 
@@ -354,8 +357,8 @@ Create the Virtual Machine:
 
 [source, bash]
 ----
-oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
-oc process -f ocp-virtualization/11-vm-fedora-02.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
+oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
+oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
 ----
 
 
@@ -367,7 +370,7 @@ The following template shows how to create a Secret and a ConfigMap and mount it
 
 [source, bash]
 ----
-oc process -f ocp-virtualization/11-vm-fedora-03.yaml -p VM_NAME=fedora-04 -p IP_ADDRESS="192.168.51.152/24" | oc apply -f -
+oc process -f virt-vms/03-vm-fedora.yaml -p VM_NAME=fedora-04 -p IP_ADDRESS="192.168.51.152/24" | oc apply -f -
 ----
 
 
@@ -457,7 +460,7 @@ spec:
 
 [source, bash]
 ----
-oc process -f ocp-virtualization/11-vm-fedora-04.yaml -p VM_NAME=fedora-05 -p IP_ADDRESS="192.168.51.153/24" | oc apply -f -
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-05 -p IP_ADDRESS="192.168.51.153/24" | oc apply -f -
 ----
 
 TODO: Add a DataVolume to the previous template.

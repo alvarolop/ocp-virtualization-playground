@@ -1,20 +1,82 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fedora-02
-  namespace: openshift
+  name: fedora-03
   labels:
     template.kubevirt.io/type: vm
     os.template.kubevirt.io/fedora36: 'true'
     workload.template.kubevirt.io/server: 'true'
   annotations:
     name.os.template.kubevirt.io/fedora36: Fedora 36
-    description: Template to deploy a basic Fedora connected to the Pod Network and a secondary network configured using Multus. No persistence configured.
-    openshift.io/display-name: Fedora VM 02
+    description: Template to deploy a basic Fedora connected to the Pod Network and a secondary network configured using Multus. It also configures persistence based on a Kubernetes PersistentVolume.
+    openshift.io/display-name: Fedora VM 03
     openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
     template.kubevirt.io/provider: Alvaro
     iconClass: icon-fedora
 objects:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${VM_NAME}-secret
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    type: Opaque 
+    stringData: 
+      secret.txt: |-     
+        This file contains secret information
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: ${VM_NAME}-config
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    data:
+      config.txt: |-
+        This file contains configuration information
+  - apiVersion: cdi.kubevirt.io/v1alpha1
+    kind: DataVolume
+    metadata:
+      name: ${VM_NAME}-datavolume-image
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    spec:
+      preallocation: true
+      pvc:
+        accessModes: # RWX so the VM is live migratable.
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        # storageClassName: ocs-storagecluster-ceph-rbd
+        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
+        volumeMode: Block 
+      source:
+        http:
+          url: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/images/Fedora-Server-KVM-38-1.6.x86_64.qcow2
+  - apiVersion: cdi.kubevirt.io/v1alpha1
+    kind: DataVolume
+    metadata:
+      name: ${VM_NAME}-datavolume
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    spec:
+      pvc:
+        accessModes: # RWX so the VM is live migratable.
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 40Gi
+        # storageClassName: ocs-storagecluster-ceph-rbd
+        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
+        volumeMode: Block 
+      source:
+        pvc:
+          name: ${VM_NAME}-datavolume-image
+          namespace: ${VM_PROJECT}
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
@@ -53,12 +115,26 @@ objects:
               threads: 1
             devices:
               disks:
-                - disk:
+                - bootOrder: 1
+                  disk:
                     bus: virtio
                   name: rootdisk
                 - disk:
                     bus: virtio
-                  name: cloudinitdisk
+                  name: fedora-image-disk
+                # - disk:
+                #     bus: virtio
+                #   name: cloudinitdisk
+                # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#configmap
+                - disk: {}
+                  name: configmap-disk
+                  # set serial
+                  serial: CONFIG01
+                  # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#secret
+                - disk: {}
+                  name: secret-disk
+                  # set serial
+                  serial: SECRET01
               interfaces:
                 - masquerade: {}
                   model: virtio
@@ -92,6 +168,12 @@ objects:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
+            - name: configmap-disk
+              configMap:
+                name: ${VM_NAME}-config
+            - name: secret-disk
+              secret:
+                secretName: ${VM_NAME}-secret
             - cloudInitNoCloud:
                 userData: |-
                   #cloud-config
@@ -102,6 +184,11 @@ objects:
                   password: fedora
                   chpasswd:
                     expire: false
+                  bootcmd:
+                    # mount the disks
+                    - "mkdir /mnt/{app-config,app-secret}"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep CONFIG01 | cut -f1 -d' ') /mnt/app-config"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep SECRET01 | cut -f1 -d' ') /mnt/app-secret"
                 networkData: |
                   version: 2
                   ethernets:
@@ -109,6 +196,9 @@ objects:
                       addresses:
                       - ${IP_ADDRESS}
               name: cloudinitdisk
+            - dataVolume:
+                name: ${VM_NAME}-datavolume-image
+              name: fedora-image-disk
   - apiVersion: v1
     kind: Service
     metadata:
