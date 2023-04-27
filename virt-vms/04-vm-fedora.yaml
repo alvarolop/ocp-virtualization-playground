@@ -2,7 +2,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fedora-03
+  name: fedora-04
   labels:
     template.kubevirt.io/type: vm
     os.template.kubevirt.io/fedora36: 'true'
@@ -224,7 +224,7 @@ parameters:
   - name: VM_NAME
     description: "The name of the VM deployment."
     required: false
-    value: fedora-02
+    value: fedora-04
   - name: IP_ADDRESS
     description: "The IP address for the secondary network."
     required: false

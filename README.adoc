@@ -357,8 +357,8 @@ Create the Virtual Machine:
 
 [source, bash]
 ----
-oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-02 -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
-oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
+oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-02-a -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
+oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-03-b -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
 ----
 
 
@@ -370,7 +370,7 @@ The following template shows how to create a Secret and a ConfigMap and mount it
 
 [source, bash]
 ----
-oc process -f virt-vms/03-vm-fedora.yaml -p VM_NAME=fedora-04 -p IP_ADDRESS="192.168.51.152/24" | oc apply -f -
+oc process -f virt-vms/03-vm-fedora.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192.168.51.152/24" | oc apply -f -
 ----
 
 
@@ -460,7 +460,7 @@ spec:
 
 [source, bash]
 ----
-oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-05 -p IP_ADDRESS="192.168.51.153/24" | oc apply -f -
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04 -p IP_ADDRESS="192.168.51.153/24" | oc apply -f -
 ----
 
 TODO: Add a DataVolume to the previous template.
