@@ -281,7 +281,12 @@ You can install it by applying the following file:
 
 [source, bash]
 ----
-oc apply -f ocp-installation/10-nmstate.yaml
+# Install the operator 
+oc apply -f ocp-installation/10-nmstate-installation.yaml
+# Wait until the operator is installed
+sleep 20
+# Create the NMstate object
+oc apply -f ocp-installation/11-nmstate-deployment.yaml
 ----
 
 After that, it will be useful basically for three things:
