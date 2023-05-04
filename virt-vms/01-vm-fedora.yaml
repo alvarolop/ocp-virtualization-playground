@@ -3,7 +3,6 @@ apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
   name: fedora-01
-  namespace: openshift
   labels:
     template.kubevirt.io/type: vm
     os.template.kubevirt.io/fedora36: 'true'

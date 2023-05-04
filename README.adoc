@@ -305,7 +305,7 @@ oc get nns $NODE_NAME -o yaml
 +
 [source, bash]
 ----
-oc apply -f virt-network/21-nncp-fedora.yaml
+oc apply -f virt-network/01-nncp-fedora.yaml
 ----
 +
 3. You can see the Configuration Policies with the following command:
@@ -352,7 +352,7 @@ How to configure it? Use the **Network Attachment Definition**, which is a names
 
 [source, bash]
 ----
-oc apply -f virt-network/22-network-fedora-external.yaml
+oc apply -f virt-network/10-network-fedora-external.yaml
 ----
 
 
@@ -363,7 +363,7 @@ Create the Virtual Machine:
 [source, bash]
 ----
 oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-02-a -p IP_ADDRESS="192.168.51.150/24" | oc apply -f -
-oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-03-b -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
+oc process -f virt-vms/02-vm-fedora.yaml -p VM_NAME=fedora-02-b -p IP_ADDRESS="192.168.51.151/24" | oc apply -f -
 ----
 
 
