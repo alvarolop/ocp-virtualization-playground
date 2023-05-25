@@ -335,8 +335,8 @@ NOTE: If you need more information about this topic, you can check the https://d
 
 If you want to compare the configuration before and after setting the Node Network Configuration Policy, you can compare the files that contain the following outputs:
 
-* `examples/metal-node-nns-out-v01.yaml`: Before setting the configuration, there is no Bridge `br1`.
-* `examples/metal-node-nns-out-v02.yaml`: After setting the configuration, there is a Bridge named `br1`.
+* `docs/examples/metal-node-nns-out-v01.yaml`: Before setting the configuration, there is no Bridge `br1`.
+* `docs/examples/metal-node-nns-out-v02.yaml`: After setting the configuration, there is a Bridge named `br1`.
 
 
 
@@ -352,7 +352,7 @@ How to configure it? Use the **Network Attachment Definition**, which is a names
 
 [source, bash]
 ----
-oc apply -f virt-network/10-network-fedora-external.yaml
+oc process -f virt-network/10-network-fedora-external.yaml | oc apply -f -
 ----
 
 
@@ -423,7 +423,7 @@ The source section of a DataVolume resource provides the details of the disk ima
 
 ==== External Storage
 
-* Connect the storage from inside the VM. You can choose this solution for storage that you access through the network.
+* Connect the storage from inside the VM. For storage that you access through the network.
 * Connect the storage through a Kubernetes PV and then attach the volume as a VM disk. This is the Kubernetes way.
 
 .Example of PV configuration
@@ -475,6 +475,50 @@ TODO: Add a DataVolume to the previous template.
 
 
 
+
+
+
+
+
+== Observability
+
+
+
+=== Logging
+
+
+
+
+
+=== Metrics
+
+
+
+
+image::ocp-virt-vm-dashboard.png[]
+
+
+image::ocp-virt-vm-metrics.png[]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 :sectnums!:
 
 == Annex: Testing container image
@@ -493,7 +537,7 @@ oc process -f ocp-tools/01-toolbox.yaml -p POD_PROJECT=vms-test | oc apply -f -
 
 In some cases, networking configuration could be tricky. That's why in this document I compare several VM configuration combinations and their real configuration in the machine.
 
->> link:analysis-network-config/RESULTS.adoc[Click Here] <<
+>> link:docs/analysis-network-config/RESULTS.adoc[Click Here] <<
 
 
 
