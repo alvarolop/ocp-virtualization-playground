@@ -22,7 +22,7 @@ oc process -f docs/test-reuse-pv/20-app.yaml \
     -p APP_NAME=test-persistence-02 | oc apply -f -
 ----
 
-== Test result
+== Execute write and reads over the same PVC
 
 [source, bash]
 ----
@@ -33,7 +33,16 @@ oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata
 # Read the content from both containers
 oc exec $(oc get pod -l app=test-persistence-01 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
 oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
-
-
 ----
 
+== Results
+
+Both containers can read and write in the same PVC folder:
+
+[source, bash]
+----
+$ oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
+    test-persistence-02-f47f9b79b-2z7gr
+    test-persistence-01-b779bfb5-7gxkp
+    test-persistence-02-f47f9b79b-2z7gr
+----
