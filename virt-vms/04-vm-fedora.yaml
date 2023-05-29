@@ -39,7 +39,7 @@ objects:
   - apiVersion: cdi.kubevirt.io/v1alpha1
     kind: DataVolume
     metadata:
-      name: ${VM_NAME}-datavolume-image
+      name: fedora38-image
       namespace: ${VM_PROJECT}
       labels:
         app: ${VM_NAME}
@@ -51,7 +51,6 @@ objects:
         resources:
           requests:
             storage: 10Gi
-        # storageClassName: ocs-storagecluster-ceph-rbd
         # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
         volumeMode: Block 
       source:
@@ -71,13 +70,30 @@ objects:
         resources:
           requests:
             storage: 40Gi
-        # storageClassName: ocs-storagecluster-ceph-rbd
         # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
         volumeMode: Block 
       source:
         pvc:
-          name: ${VM_NAME}-datavolume-image
+          name: fedora38-image
           namespace: ${VM_PROJECT}
+  - apiVersion: cdi.kubevirt.io/v1alpha1
+    kind: DataVolume
+    metadata:
+      name: ${VM_NAME}-extra-disk
+      namespace: ${VM_PROJECT}
+      labels:
+        app: ${VM_NAME}
+    spec:
+      pvc:
+        accessModes: # RWO so the VM is not live migratable.
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 8Gi
+        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
+        volumeMode: Block 
+      source:
+        blank: {}
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
@@ -101,14 +117,6 @@ objects:
             kubevirt.io/size: small
             app: ${VM_NAME}
         spec:
-          # https://kubevirt.io/user-guide/virtual_machines/accessing_virtual_machines/
-          # accessCredentials:
-          # - sshPublicKey:
-          #     source:
-          #       secret:
-          #         secretName: user-pub-key 
-          #     propagationMethod:
-          #       configDrive: {}
           domain:
             cpu:
               cores: 2
@@ -122,19 +130,15 @@ objects:
                   name: rootdisk
                 - disk:
                     bus: virtio
-                  name: fedora-image-disk
-                # - disk:
-                #     bus: virtio
-                #   name: cloudinitdisk
+                  serial: EXTRA01
+                  name: extra-disk
                 # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#configmap
                 - disk: {}
                   name: configmap-disk
-                  # set serial
                   serial: CONFIG01
-                  # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#secret
+                # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#secret
                 - disk: {}
                   name: secret-disk
-                  # set serial
                   serial: SECRET01
               interfaces:
                 - masquerade: {}
@@ -169,6 +173,12 @@ objects:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
+            # - name: rootdisk
+            #   dataVolume:
+            #     name: ${VM_NAME}-datavolume
+            - name: extra-disk
+              dataVolume:
+                name: ${VM_NAME}-extra-disk
             - name: configmap-disk
               configMap:
                 name: ${VM_NAME}-config
@@ -187,9 +197,13 @@ objects:
                     expire: false
                   bootcmd:
                     # mount the disks
-                    - "mkdir /mnt/{app-config,app-secret}"
+                    - "mkdir /mnt/{app-config,app-secret,extra}"
                     - "mount /dev/$(lsblk --nodeps -no name,serial | grep CONFIG01 | cut -f1 -d' ') /mnt/app-config"
                     - "mount /dev/$(lsblk --nodeps -no name,serial | grep SECRET01 | cut -f1 -d' ') /mnt/app-secret"
+                    - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ') --script -- mklabel gpt"
+                    - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ') --script -- mkpart primary 0 -1"
+                    - "mkfs.ext4 /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1 /mnt/extra"
                 networkData: |
                   version: 2
                   ethernets:
@@ -197,9 +211,6 @@ objects:
                       addresses:
                       - ${IP_ADDRESS}
               name: cloudinitdisk
-            - dataVolume:
-                name: ${VM_NAME}-datavolume-image
-              name: fedora-image-disk
   - apiVersion: v1
     kind: Service
     metadata:
