@@ -1,0 +1,37 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+objects:
+
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: ${PVC_NAME}
+      namespace: ${APP_PROJECT}
+      labels:
+        app: ${APP_NAME}
+        app.kubernetes.io/component: ${APP_NAME}
+        app.kubernetes.io/instance: ${APP_NAME}
+        app.kubernetes.io/name: ${APP_NAME}
+        app.kubernetes.io/part-of: ${APP_NAME}-app
+        app.openshift.io/runtime: shadowman
+    spec:
+      # accessModes:
+      #   - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      volumeMode: Filesystem
+        
+parameters:
+  - name: APP_PROJECT
+    description: "The project where the application will be deployed."
+    required: false
+    value: vms-test
+  - name: APP_NAME
+    description: "The application name."
+    required: false
+    value: test-persistence
+  - name: PVC_NAME
+    description: "The PVC name."
+    required: false
+    value: sharedfs

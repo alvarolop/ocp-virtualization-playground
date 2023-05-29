@@ -1,0 +1,39 @@
+= Analysis: SharedFS
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-05
+
+== Introduction
+
+
+== Deploy the environment
+
+
+[source, bash]
+----
+# Create the PVC
+oc process -f docs/test-reuse-pv/10-pvc.yaml | oc apply -f -
+
+# Create app 01
+oc process -f docs/test-reuse-pv/20-app.yaml \
+    -p APP_NAME=test-persistence-01 | oc apply -f -
+    
+# Create app 02
+oc process -f docs/test-reuse-pv/20-app.yaml \
+    -p APP_NAME=test-persistence-02 | oc apply -f -
+----
+
+== Test result
+
+[source, bash]
+----
+# Write hostname inside the shared file
+oc exec $(oc get pod -l app=test-persistence-01 -o jsonpath="{.items[0].metadata.name}") -- bash -c "printenv HOSTNAME >> /mount/extra/shared-file.txt"
+oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- bash -c "printenv HOSTNAME >> /mount/extra/shared-file.txt"
+
+# Read the content from both containers
+oc exec $(oc get pod -l app=test-persistence-01 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
+oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
+
+
+----
+
