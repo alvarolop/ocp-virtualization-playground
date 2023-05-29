@@ -10,7 +10,7 @@ v1.0, 2023-02
 :sectnumlevels: 2
 :sectnums: 
 :source-highlighter: pygments
-:imagesdir: images
+:imagesdir: docs/images
 // Start: Enable admonition icons
 ifdef::env-github[]
 :tip-caption: :bulb:
