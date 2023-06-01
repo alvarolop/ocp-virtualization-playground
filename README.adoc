@@ -87,10 +87,10 @@ a| {yes}Secrets
 | Fedora-04
 a| {yes}Pod Network
 
-{yes}Multus
-a| {yes}Secrets
+{no}Multus
+a| {no}Secrets
 
-{yes}ConfigMap
+{no}ConfigMap
 | {yes}DataVolume
 |link:virt-vms/04-vm-fedora.yaml[Click here]
 
@@ -460,17 +460,43 @@ spec:
 ----
 
 
-=== Creating a VM with Storage and 2 Networks
+=== Creating two VMs with a shared extra disk
 
+
+The following commands allow you to create a 
 
 [source, bash]
 ----
-oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04 -p IP_ADDRESS="192.168.51.153/24" | oc apply -f -
+# Create the shared disk using a Data Volume
+oc process -f virt-vms/04-vm-shared-disk.yaml | oc apply -f -
+
+# Create the VMs that will use the shared disk
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
 ----
 
-TODO: Add a DataVolume to the previous template.
+You can test the previous configuration using the following commands:
 
+[source, bash]
+----
+# First, log in to a VM and change owner of the folder
+virtctl ssh fedora@fedora-04-a
+  sudo chown fedora:fedora -R /mnt/extra/
+virtctl ssh fedora@fedora-04-b
+  sudo chown fedora:fedora -R /mnt/extra/
 
+# Write hostname inside the shared file
+virtctl ssh fedora@fedora-04-a -c sh -c "cat /etc/hostname >> /mnt/extra/shared-file.txt"
+virtctl ssh fedora@fedora-04-b -c sh -c "cat /etc/hostname >> /mnt/extra/shared-file.txt"
+
+oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- bash -c "printenv HOSTNAME >> /mount/extra/shared-file.txt"
+
+# Read the content from both containers
+virtctl ssh fedora@fedora-04-b -c cat /mount/extra/shared-file.txt
+
+oc exec $(oc get pod -l app=test-persistence-01 -o jsonpath="{.items[0].metadata.name}") -- 
+oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
+----
 
 
 

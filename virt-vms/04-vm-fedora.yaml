@@ -9,91 +9,12 @@ metadata:
     workload.template.kubevirt.io/server: 'true'
   annotations:
     name.os.template.kubevirt.io/fedora36: Fedora 36
-    description: Template to deploy a basic Fedora connected to the Pod Network and a secondary network configured using Multus. It also configures persistence based on a Kubernetes PersistentVolume.
+    description: Template to deploy a basic Fedora connected to the Pod Network with an extra empty disk. 
     openshift.io/display-name: Fedora VM 03
     openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
     template.kubevirt.io/provider: Alvaro
     iconClass: icon-fedora
 objects:
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: ${VM_NAME}-secret
-      namespace: ${VM_PROJECT}
-      labels:
-        app: ${VM_NAME}
-    type: Opaque 
-    stringData: 
-      secret.txt: |-     
-        This file contains secret information
-  - apiVersion: v1
-    kind: ConfigMap
-    metadata:
-      name: ${VM_NAME}-config
-      namespace: ${VM_PROJECT}
-      labels:
-        app: ${VM_NAME}
-    data:
-      config.txt: |-
-        This file contains configuration information
-  - apiVersion: cdi.kubevirt.io/v1alpha1
-    kind: DataVolume
-    metadata:
-      name: fedora38-image
-      namespace: ${VM_PROJECT}
-      labels:
-        app: ${VM_NAME}
-    spec:
-      preallocation: true
-      pvc:
-        accessModes: # RWX so the VM is live migratable.
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
-        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
-        volumeMode: Block 
-      source:
-        http:
-          url: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/images/Fedora-Server-KVM-38-1.6.x86_64.qcow2
-  - apiVersion: cdi.kubevirt.io/v1alpha1
-    kind: DataVolume
-    metadata:
-      name: ${VM_NAME}-datavolume
-      namespace: ${VM_PROJECT}
-      labels:
-        app: ${VM_NAME}
-    spec:
-      pvc:
-        accessModes: # RWX so the VM is live migratable.
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 40Gi
-        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
-        volumeMode: Block 
-      source:
-        pvc:
-          name: fedora38-image
-          namespace: ${VM_PROJECT}
-  - apiVersion: cdi.kubevirt.io/v1alpha1
-    kind: DataVolume
-    metadata:
-      name: ${VM_NAME}-extra-disk
-      namespace: ${VM_PROJECT}
-      labels:
-        app: ${VM_NAME}
-    spec:
-      pvc:
-        accessModes: # RWO so the VM is not live migratable.
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 8Gi
-        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
-        volumeMode: Block 
-      source:
-        blank: {}
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
@@ -132,21 +53,10 @@ objects:
                     bus: virtio
                   serial: EXTRA01
                   name: extra-disk
-                # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#configmap
-                - disk: {}
-                  name: configmap-disk
-                  serial: CONFIG01
-                # https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#secret
-                - disk: {}
-                  name: secret-disk
-                  serial: SECRET01
               interfaces:
                 - masquerade: {}
                   model: virtio
                   name: default
-                - bridge: {}
-                  name: nic-0
-                  model: virtio
               networkInterfaceMultiqueue: true
               rng: {}
             features:
@@ -165,26 +75,14 @@ objects:
           networks:
             - name: default
               pod: {}
-            - name: nic-0
-              multus:
-                networkName: fedora-external
           terminationGracePeriodSeconds: 180
           volumes:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
-            # - name: rootdisk
-            #   dataVolume:
-            #     name: ${VM_NAME}-datavolume
             - name: extra-disk
               dataVolume:
-                name: ${VM_NAME}-extra-disk
-            - name: configmap-disk
-              configMap:
-                name: ${VM_NAME}-config
-            - name: secret-disk
-              secret:
-                secretName: ${VM_NAME}-secret
+                name: shared-disk
             - cloudInitNoCloud:
                 userData: |-
                   #cloud-config
@@ -196,20 +94,12 @@ objects:
                   chpasswd:
                     expire: false
                   bootcmd:
-                    # mount the disks
-                    - "mkdir /mnt/{app-config,app-secret,extra}"
-                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep CONFIG01 | cut -f1 -d' ') /mnt/app-config"
-                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep SECRET01 | cut -f1 -d' ') /mnt/app-secret"
+                    # mount the disk
+                    - "mkdir /mnt/extra"
                     - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ') --script -- mklabel gpt"
                     - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ') --script -- mkpart primary 0 -1"
                     - "mkfs.ext4 /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1"
                     - "mount /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1 /mnt/extra"
-                networkData: |
-                  version: 2
-                  ethernets:
-                    eth1:
-                      addresses:
-                      - ${IP_ADDRESS}
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
@@ -236,7 +126,3 @@ parameters:
     description: "The name of the VM deployment."
     required: false
     value: fedora-04
-  - name: IP_ADDRESS
-    description: "The IP address for the secondary network."
-    required: false
-    value: 192.168.51.150/24
