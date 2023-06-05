@@ -19,7 +19,7 @@ objects:
     kind: VirtualMachine
     metadata:
       name: ${VM_NAME}
-      namespace: ${VM_PROJECT}
+      namespace: ${VM_NAMESPACE}
       annotations:
         description: "VM ${VM_NAME}"
       labels:
@@ -51,8 +51,12 @@ objects:
                   name: rootdisk
                 - disk:
                     bus: virtio
+                  name: cloudinitdisk
+                - disk:
+                    bus: virtio
                   serial: EXTRA_FS
                   name: ${SHARED_FS}
+                  shareable: true
               interfaces:
                 - masquerade: {}
                   model: virtio
@@ -93,6 +97,10 @@ objects:
                   password: fedora
                   chpasswd:
                     expire: false
+                  bootcmd:
+                    # mount the extra filesystem
+                    - "mkdir /mnt/extra"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1 /mnt/extra"
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
@@ -101,7 +109,7 @@ objects:
         app: ${VM_NAME}
         os.template.kubevirt.io/fedora36: 'true'
       name: ${VM_NAME}
-      namespace: ${VM_PROJECT}
+      namespace: ${VM_NAMESPACE}
     spec:
       ports:
         - port: 8080
@@ -111,8 +119,8 @@ objects:
         app: ${VM_NAME}
       type: ClusterIP
 parameters:
-  - name: VM_PROJECT
-    description: "The project where the VM will be deployed."
+  - name: VM_NAMESPACE
+    description: "The namespace where the VM will be deployed."
     required: false
     value: vms-test
   - name: VM_NAME
@@ -122,4 +130,4 @@ parameters:
   - name: SHARED_FS
     description: "The PVC name."
     required: false
-    value: efs-shared-filesystem
+    value: shared-filesystem

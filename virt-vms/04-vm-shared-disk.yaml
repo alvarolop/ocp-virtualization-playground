@@ -7,10 +7,10 @@ objects:
   - apiVersion: cdi.kubevirt.io/v1alpha1
     kind: DataVolume
     metadata:
-      name: ${PVC_NAME}
-      namespace: ${VM_PROJECT}
+      name: ${DATAVOLUME_NAME}
+      namespace: ${DATAVOLUME_NAMESPACE}
       labels:
-        app: ${PVC_NAME}
+        app: ${DATAVOLUME_NAME}
     spec:
       pvc:
         accessModes:
@@ -18,15 +18,20 @@ objects:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: efs-csi
+        storageClassName: ${STORAGE_CLASS_NAME}
+        volumeMode: Filesystem
       source:
         blank: {}
 parameters:
-  - name: VM_PROJECT
-    description: "The project where the VM will be deployed."
+  - name: DATAVOLUME_NAMESPACE
+    description: "The namespace where the DV will be generated."
     required: false
     value: vms-test
-  - name: PVC_NAME
+  - name: DATAVOLUME_NAME
     description: "The PVC name."
     required: false
-    value: efs-shared-filesystem
+    value: shared-filesystem
+  - name: STORAGE_CLASS_NAME
+    description: "The name of the storage class."
+    required: false
+    value: efs-csi

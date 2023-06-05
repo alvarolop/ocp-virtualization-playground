@@ -474,6 +474,7 @@ Access this documentation to know an automated process to configure AWS EFS in a
 
 The following commands allow you to create two VMs using the new Storage Class
 
+.Using AWS EFS
 [source, bash]
 ----
 # Create the shared disk using a Data Volume
@@ -485,7 +486,16 @@ oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
 ----
 
 
+.Using ODF CephFS
+[source, bash]
+----
+# Create the shared disk using a Data Volume
+oc process -f virt-vms/04-vm-shared-disk.yaml -p STORAGE_CLASS_NAME=ocs-storagecluster-cephfs | oc apply -f -
 
+# Create the VMs that will use the shared disk
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
+----
 
 
 
