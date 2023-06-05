@@ -18,10 +18,10 @@ SUBNET_ID=$(aws ec2 describe-subnets \
     --output text)
 
 SECURITY_GROUP=$(aws ec2 describe-security-groups \
---region $AWS_DEFAULT_REGION \
---filters Name=tag:Name,Values=*worker* \
---query "SecurityGroups[*].GroupId" \
---output text)
+    --region $AWS_DEFAULT_REGION \
+    --filters Name=tag:Name,Values=*worker* \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
 
 echo "This is the SUBNET_ID: $SUBNET_ID"
 echo "This is the SECURITY_GROUP: $SECURITY_GROUP"
