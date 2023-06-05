@@ -19,7 +19,7 @@ objects:
     kind: Secret
     metadata:
       name: ${VM_NAME}-secret
-      namespace: ${VM_PROJECT}
+      namespace: ${VM_NAMESPACE}
       labels:
         app: ${VM_NAME}
     type: Opaque 
@@ -30,7 +30,7 @@ objects:
     kind: ConfigMap
     metadata:
       name: ${VM_NAME}-config
-      namespace: ${VM_PROJECT}
+      namespace: ${VM_NAMESPACE}
       labels:
         app: ${VM_NAME}
     data:
@@ -40,7 +40,7 @@ objects:
     kind: VirtualMachine
     metadata:
       name: ${VM_NAME}
-      namespace: ${VM_PROJECT}
+      namespace: ${VM_NAMESPACE}
       annotations:
         description: "VM ${VM_NAME}"
       labels:
@@ -158,7 +158,7 @@ objects:
         app: ${VM_NAME}
         os.template.kubevirt.io/fedora36: 'true'
       name: ${VM_NAME}
-      namespace: ${VM_PROJECT}
+      namespace: ${VM_NAMESPACE}
     spec:
       ports:
         - port: 8080
@@ -168,7 +168,7 @@ objects:
         app: ${VM_NAME}
       type: ClusterIP
 parameters:
-  - name: VM_PROJECT
+  - name: VM_NAMESPACE
     description: "The project where the VM will be deployed."
     required: false
     value: vms-test
