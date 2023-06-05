@@ -6,32 +6,30 @@ objects:
     apiVersion: v1
     metadata:
       name: ${PVC_NAME}
-      namespace: ${APP_PROJECT}
-      labels:
-        app: ${APP_NAME}
-        app.kubernetes.io/component: ${APP_NAME}
-        app.kubernetes.io/instance: ${APP_NAME}
-        app.kubernetes.io/name: ${APP_NAME}
-        app.kubernetes.io/part-of: ${APP_NAME}-app
-        app.openshift.io/runtime: shadowman
+      namespace: ${PVC_NAMESPACE}
     spec:
-      # accessModes:
-      #   - ReadWriteOnce
+      accessModes:
+        - ${ACCESS_MODE}
       resources:
         requests:
           storage: 1Gi
       volumeMode: Filesystem
+      storageClassName: ${STORAGE_CLASS_NAME}
         
 parameters:
-  - name: APP_PROJECT
+  - name: PVC_NAMESPACE
     description: "The project where the application will be deployed."
     required: false
     value: vms-test
-  - name: APP_NAME
-    description: "The application name."
-    required: false
-    value: test-persistence
   - name: PVC_NAME
     description: "The PVC name."
     required: false
-    value: sharedfs
+    value: efs-shared-filesystem
+  - name: ACCESS_MODE
+    description: "The PVC Access Mode."
+    required: false
+    value: ReadWriteMany
+  - name: STORAGE_CLASS_NAME
+    description: "The name of the storage class."
+    required: false
+    value: efs-csi

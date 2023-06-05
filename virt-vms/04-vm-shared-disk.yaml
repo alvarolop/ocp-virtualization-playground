@@ -3,35 +3,22 @@ apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
   name: shared-disk
-  labels:
-    template.kubevirt.io/type: vm
-    os.template.kubevirt.io/fedora36: 'true'
-    workload.template.kubevirt.io/server: 'true'
-  annotations:
-    name.os.template.kubevirt.io/fedora36: Fedora 36
-    description: Template to deploy a basic Fedora connected to the Pod Network with an extra empty disk. 
-    openshift.io/display-name: Fedora VM 03
-    openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
-    template.kubevirt.io/provider: Alvaro
-    iconClass: icon-fedora
 objects:
   - apiVersion: cdi.kubevirt.io/v1alpha1
     kind: DataVolume
     metadata:
-      name: shared-disk
+      name: ${PVC_NAME}
       namespace: ${VM_PROJECT}
       labels:
-        app: shared-disk
+        app: ${PVC_NAME}
     spec:
       pvc:
-        accessModes: # RWO so the VM is not live migratable.
-          - ReadWriteOnce
-          # - ReadWriteMany
+        accessModes:
+          - ReadWriteMany
         resources:
           requests:
-            storage: 8Gi
-        # For optimal performance, Red Hat recommends using volumes in Block mode for VM disks.
-        volumeMode: Block 
+            storage: 2Gi
+        storageClassName: efs-csi
       source:
         blank: {}
 parameters:
@@ -39,7 +26,7 @@ parameters:
     description: "The project where the VM will be deployed."
     required: false
     value: vms-test
-  - name: VM_NAME
-    description: "The name of the VM deployment."
+  - name: PVC_NAME
+    description: "The PVC name."
     required: false
-    value: fedora-04
+    value: efs-shared-filesystem

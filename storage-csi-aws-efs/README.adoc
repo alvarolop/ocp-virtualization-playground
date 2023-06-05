@@ -1,0 +1,60 @@
+= Configuring AWS EFS CSI
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-06
+
+Container Storage Interface (CSI) is an API specification for the management of container storage across different container orchestration (CO) systems. You can manage the storage volumes within the container native environments, without having specific knowledge of the underlying storage infrastructure.
+
+
+[source, bash]
+----
+# Deploy the operator
+oc apply -f storage-csi-aws-efs/10-operator-install.yaml
+
+# Wait until the operator is installed
+sleep 10
+
+# Create the CSI Driver (As you can skip the STS config with my deployment)
+oc apply -f storage-csi-aws-efs/20-csi-driver.yaml
+
+# Wait for two conditions
+oc wait clustercsidriver.operator.openshift.io/efs.csi.aws.com \
+  --for=condition=AWSEFSDriverNodeServiceControllerAvailable \
+  --for=condition=AWSEFSDriverControllerServiceControllerAvailable
+
+# Create a Filesystem in Amazon EFS and the StorageClass
+./storage-csi-aws-efs/create-aws-efs-filesystem.sh ./aws-env-vars
+
+# Create the PVC
+oc process -f docs/analysis-share-pv/10-pvc.yaml \
+  PVC_NAMESPACE=vms-test | oc apply -f -
+
+# Create the application
+oc process -f docs/analysis-share-pv/20-app.yaml \
+  -p APP_NAME=test-persistence-01 | oc apply -f -
+----
+
+== Testing
+
+You can test the previous configuration using the following commands:
+
+
+[source, bash]
+----
+# First, log in to a VM and change owner of the folder
+virtctl ssh fedora@fedora-04-a
+  sudo chown fedora:fedora -R /mnt/extra/
+virtctl ssh fedora@fedora-04-b
+  sudo chown fedora:fedora -R /mnt/extra/
+
+# Write hostname inside the shared file
+virtctl ssh fedora@fedora-04-a -c sh -c "cat /etc/hostname >> /mnt/extra/shared-file.txt"
+virtctl ssh fedora@fedora-04-b -c sh -c "cat /etc/hostname >> /mnt/extra/shared-file.txt"
+
+oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- bash -c "printenv HOSTNAME >> /mount/extra/shared-file.txt"
+
+# Read the content from both containers
+virtctl ssh fedora@fedora-04-b -c cat /mount/extra/shared-file.txt
+
+oc exec $(oc get pod -l app=test-persistence-01 -o jsonpath="{.items[0].metadata.name}") -- 
+oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
+----

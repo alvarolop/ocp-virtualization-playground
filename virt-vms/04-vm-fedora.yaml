@@ -51,8 +51,8 @@ objects:
                   name: rootdisk
                 - disk:
                     bus: virtio
-                  serial: EXTRA01
-                  name: extra-disk
+                  serial: EXTRA_FS
+                  name: ${SHARED_FS}
               interfaces:
                 - masquerade: {}
                   model: virtio
@@ -80,9 +80,9 @@ objects:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
-            - name: extra-disk
-              dataVolume:
-                name: shared-disk
+            - name: ${SHARED_FS}
+              persistentVolumeClaim:
+                claimName: ${SHARED_FS}
             - cloudInitNoCloud:
                 userData: |-
                   #cloud-config
@@ -93,13 +93,6 @@ objects:
                   password: fedora
                   chpasswd:
                     expire: false
-                  bootcmd:
-                    # mount the disk
-                    - "mkdir /mnt/extra"
-                    - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ') --script -- mklabel gpt"
-                    - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ') --script -- mkpart primary 0 -1"
-                    - "mkfs.ext4 /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1"
-                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1 /mnt/extra"
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
@@ -126,3 +119,7 @@ parameters:
     description: "The name of the VM deployment."
     required: false
     value: fedora-04
+  - name: SHARED_FS
+    description: "The PVC name."
+    required: false
+    value: efs-shared-filesystem

@@ -94,4 +94,4 @@ parameters:
   - name: PVC_NAME
     description: "The PVC name."
     required: false
-    value: sharedfs
+    value: efs-shared-filesystem

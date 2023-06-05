@@ -462,8 +462,17 @@ spec:
 
 === Creating two VMs with a shared extra disk
 
+WARNING: Currently, this chapter is not working as expected as `virtiofs` is an Experimental feature for Kubevirt and, without it, you cannot mount File Systems.
 
-The following commands allow you to create a 
+
+CAUTION: The only StorageClass available by default on OCP on AWS is GP-2 and GP-3 which are AWS Elastic Block Store. This does not allow us to create RWX File Systems. Therefore, we have to add the https://docs.openshift.com/container-platform/4.12/storage/container_storage_interface/persistent-storage-csi-aws-efs.html[AWS Elastic File Service CSI Driver Operator] to access EFS.
+
+Access this documentation to know an automated process to configure AWS EFS in an OCP cluster deployed on AWS:
+
+>> link:storage-csi-aws-efs/README.adoc[Click Here] <<
+
+
+The following commands allow you to create two VMs using the new Storage Class
 
 [source, bash]
 ----
@@ -475,28 +484,10 @@ oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
 oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
 ----
 
-You can test the previous configuration using the following commands:
 
-[source, bash]
-----
-# First, log in to a VM and change owner of the folder
-virtctl ssh fedora@fedora-04-a
-  sudo chown fedora:fedora -R /mnt/extra/
-virtctl ssh fedora@fedora-04-b
-  sudo chown fedora:fedora -R /mnt/extra/
 
-# Write hostname inside the shared file
-virtctl ssh fedora@fedora-04-a -c sh -c "cat /etc/hostname >> /mnt/extra/shared-file.txt"
-virtctl ssh fedora@fedora-04-b -c sh -c "cat /etc/hostname >> /mnt/extra/shared-file.txt"
 
-oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- bash -c "printenv HOSTNAME >> /mount/extra/shared-file.txt"
 
-# Read the content from both containers
-virtctl ssh fedora@fedora-04-b -c cat /mount/extra/shared-file.txt
-
-oc exec $(oc get pod -l app=test-persistence-01 -o jsonpath="{.items[0].metadata.name}") -- 
-oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata.name}") -- cat /mount/extra/shared-file.txt
-----
 
 
 
@@ -508,35 +499,14 @@ oc exec $(oc get pod -l app=test-persistence-02 -o jsonpath="{.items[0].metadata
 
 == Observability
 
-
-
 === Logging
 
-
-
-
-
 === Metrics
-
-
-
 
 image::ocp-virt-vm-dashboard.png[]
 
 
 image::ocp-virt-vm-metrics.png[]
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
