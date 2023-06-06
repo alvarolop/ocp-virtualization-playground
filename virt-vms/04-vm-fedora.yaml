@@ -54,9 +54,12 @@ objects:
                   name: cloudinitdisk
                 - disk:
                     bus: virtio
-                  serial: EXTRA_FS
-                  name: ${SHARED_FS}
+                  serial: SHAREDFS
+                  name: sharedfs
                   shareable: true
+              # filesystems:
+              #   - name: sharedfs
+              #     virtiofs: {}
               interfaces:
                 - masquerade: {}
                   model: virtio
@@ -84,7 +87,7 @@ objects:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
-            - name: ${SHARED_FS}
+            - name: sharedfs
               persistentVolumeClaim:
                 claimName: ${SHARED_FS}
             - cloudInitNoCloud:
@@ -100,7 +103,7 @@ objects:
                   bootcmd:
                     # mount the extra filesystem
                     - "mkdir /mnt/extra"
-                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep EXTRA01 | cut -f1 -d' ')1 /mnt/extra"
+                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep SHAREDFS | cut -f1 -d' ') /mnt/extra"
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service

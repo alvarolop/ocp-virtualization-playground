@@ -465,14 +465,18 @@ spec:
 WARNING: Currently, this chapter is not working as expected as `virtiofs` is an Experimental feature for Kubevirt and, without it, you cannot mount File Systems.
 
 
-CAUTION: The only StorageClass available by default on OCP on AWS is GP-2 and GP-3 which are AWS Elastic Block Store. This does not allow us to create RWX File Systems. Therefore, we have to add the https://docs.openshift.com/container-platform/4.12/storage/container_storage_interface/persistent-storage-csi-aws-efs.html[AWS Elastic File Service CSI Driver Operator] to access EFS.
+CAUTION: The only StorageClass available by default on OCP on AWS is GP-2 and GP-3 which are AWS Elastic Block Store. This does not allow us to create RWX File Systems. Therefore, we have to add the https://docs.openshift.com/container-platform/4.12/storage/container_storage_interface/persistent-storage-csi-aws-efs.html[AWS Elastic File Service CSI Driver Operator] to access EFS or ODF (Openshift Data Foundation).
 
 Access this documentation to know an automated process to configure AWS EFS in an OCP cluster deployed on AWS:
 
 >> link:storage-csi-aws-efs/README.adoc[Click Here] <<
 
+Access this documentation to know an automated process to configure Openshift Data Foundation on OCP on AWS:
 
-The following commands allow you to create two VMs using the new Storage Class
+>> link:storage-odf-aws/README.adoc[Click Here] <<
+
+
+The following commands allow you to create two VMs using the new Storage Class:
 
 .Using AWS EFS
 [source, bash]
@@ -485,7 +489,6 @@ oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
 oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
 ----
 
-
 .Using ODF CephFS
 [source, bash]
 ----
@@ -496,14 +499,6 @@ oc process -f virt-vms/04-vm-shared-disk.yaml -p STORAGE_CLASS_NAME=ocs-storagec
 oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
 oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
 ----
-
-
-
-
-
-
-
-
 
 
 
