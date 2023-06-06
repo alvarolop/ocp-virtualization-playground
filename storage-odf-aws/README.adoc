@@ -1,0 +1,17 @@
+= Configuring Openshift Data Foundation on AWS
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-06
+
+Red Hat OpenShift Data Foundation is a provider of agnostic persistent storage for OpenShift Container Platform supporting file, block, and object storage, either in-house or in hybrid clouds.
+
+
+[source, bash]
+----
+# Deploy the operator
+oc apply -f storage-odf-aws/10-operator-install.yaml
+
+# Patch the instance
+oc patch console.operator cluster --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["logging-view-plugin"]}]'
+----
+
+After installing, follow the https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.12/html-single/deploying_openshift_data_foundation_using_amazon_web_services/index#creating-an-openshift-data-foundation-service_cloud-storage[documentation] to create a *StorageSystem*.
