@@ -5,6 +5,14 @@ metadata:
   name: kubevirt-hyperconverged
   annotations:
     deployOVS: 'false'
+    kubevirt.kubevirt.io/jsonpatch: |-
+      [
+        {
+          "op": "add",
+          "path": "/spec/configuration/developerConfiguration/featureGates/-",
+          "value": "ExperimentalVirtiofsSupport"
+        }
+      ]
   namespace: openshift-cnv
 spec:
   liveMigrationConfig:
