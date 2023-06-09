@@ -475,6 +475,13 @@ Access this documentation to know an automated process to configure Openshift Da
 NOTE: Before creating the VM objects, you have to make sure that you updated the `HyperConverged` to enable the feature gate 
 *ExperimentalVirtiofsSupport*. Please check the https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#sharing-directories-with-vms[documentation on how to mount filesystems on VMs] and the desired FeatureGate. Also, check the https://github.com/kubevirt/hyperconverged-cluster-operator/blob/main/docs/cluster-configuration.md#jsonpatch-annotations[documentation on how to enable feature gates using annotations] on the HyperConverged object. You can see an example of how to do it in the link:virt-installation/02-hyperconverged.yaml#L8-L15[HyperConverged object of this repo]. 
 
+Before creating the VM, you need to provide privileged SCC to the `kubevirt-controller` Service Account. If not, you will face the https://gist.github.com/alvarolop/f7f0eee505fabe7c1da0469c07ab6eda#file-vm-yaml-L218[following errors] when trying to create the `virt-launcher` pods:
+
+[source, bash]
+----
+oc adm policy add-scc-to-user privileged system:serviceaccount:openshift-cnv:kubevirt-controller
+----
+
 The following commands allow you to create two VMs using the new Storage Class:
 
 .Create Data Volume using AWS EFS

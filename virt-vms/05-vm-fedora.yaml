@@ -55,7 +55,6 @@ objects:
               filesystems:
                 - name: sharedfs
                   virtiofs: {}
-                  serial: SHAREDFS
               interfaces:
                 - masquerade: {}
                   model: virtio
@@ -98,8 +97,8 @@ objects:
                     expire: false
                   # bootcmd:
                   #   # mount the extra filesystem
-                  #   - "mkdir /mnt/extra"
-                  #   - "mount /dev/$(lsblk --nodeps -no name,serial | grep SHAREDFS | cut -f1 -d' ') /mnt/extra"
+                  #   - "mkdir /mnt/sharedfs"
+                  #   - "mount -t virtiofs sharedfs /mnt/sharedfs"
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
