@@ -472,6 +472,9 @@ Access this documentation to know an automated process to configure Openshift Da
 
 ==== Creating the OCP resources
 
+NOTE: Before creating the VM objects, you have to make sure that you updated the `HyperConverged` to enable the feature gate 
+*ExperimentalVirtiofsSupport*. Please check the https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes/#sharing-directories-with-vms[documentation on how to mount filesystems on VMs] and the desired FeatureGate. Also, check the https://github.com/kubevirt/hyperconverged-cluster-operator/blob/main/docs/cluster-configuration.md#jsonpatch-annotations[documentation on how to enable feature gates using annotations] on the HyperConverged object. You can see an example of how to do it in the link:virt-installation/02-hyperconverged.yaml[HyperConverged object of this repo]. 
+
 The following commands allow you to create two VMs using the new Storage Class:
 
 .Create Data Volume using AWS EFS
