@@ -2,7 +2,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: fedora-04
+  name: fedora-05
   labels:
     template.kubevirt.io/type: vm
     os.template.kubevirt.io/fedora36: 'true'
@@ -10,31 +10,11 @@ metadata:
   annotations:
     name.os.template.kubevirt.io/fedora36: Fedora 36
     description: Template to deploy a basic Fedora connected to the Pod Network with an extra empty disk. 
-    openshift.io/display-name: Fedora VM 04
+    openshift.io/display-name: Fedora VM 05
     openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
     template.kubevirt.io/provider: Alvaro
     iconClass: icon-fedora
 objects:
-
-  - apiVersion: cdi.kubevirt.io/v1alpha1
-    kind: DataVolume
-    metadata:
-      name: ${VM_NAME}
-      namespace: ${VM_NAMESPACE}
-      labels:
-        app: ${VM_NAME}
-    spec:
-      pvc:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: ${STORAGE_CLASS_NAME}
-        volumeMode: Block
-      source:
-        blank: {}
-
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine
     metadata:
@@ -72,11 +52,10 @@ objects:
                 - disk:
                     bus: virtio
                   name: cloudinitdisk
-                - disk:
-                    bus: virtio
-                  serial: EXTRADISK
-                  name: extra-disk
-                  shareable: true
+              filesystems:
+                - name: sharedfs
+                  virtiofs: {}
+                  serial: SHAREDFS
               interfaces:
                 - masquerade: {}
                   model: virtio
@@ -104,9 +83,9 @@ objects:
             - name: rootdisk
               containerDisk:
                 image: 'quay.io/containerdisks/fedora:36'
-            - name: extra-disk
+            - name: sharedfs
               persistentVolumeClaim:
-                claimName: ${VM_NAME}
+                claimName: ${SHARED_FS}
             - cloudInitNoCloud:
                 userData: |-
                   #cloud-config
@@ -117,13 +96,10 @@ objects:
                   password: fedora
                   chpasswd:
                     expire: false
-                  bootcmd:
-                    # mount the extra disk
-                    - "mkdir /mnt/extra"
-                    - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRADISK | cut -f1 -d' ') --script -- mklabel gpt"
-                    - "parted /dev/$(lsblk --nodeps -no name,serial | grep EXTRADISK | cut -f1 -d' ') --script -- mkpart primary 0 -1"
-                    - "mkfs.ext4 /dev/$(lsblk --nodeps -no name,serial | grep EXTRADISK | cut -f1 -d' ')1"
-                    - "mount /dev/$(lsblk --nodeps -no name,serial | grep EXTRADISK | cut -f1 -d' ')1 /mnt/extra"
+                  # bootcmd:
+                  #   # mount the extra filesystem
+                  #   - "mkdir /mnt/extra"
+                  #   - "mount /dev/$(lsblk --nodeps -no name,serial | grep SHAREDFS | cut -f1 -d' ') /mnt/extra"
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
@@ -149,8 +125,8 @@ parameters:
   - name: VM_NAME
     description: "The name of the VM deployment."
     required: false
-    value: fedora-04
-  - name: STORAGE_CLASS_NAME
-    description: "The name of the storage class."
+    value: fedora-05
+  - name: SHARED_FS
+    description: "The PVC name."
     required: false
-    value: gp3-csi
+    value: shared-filesystem

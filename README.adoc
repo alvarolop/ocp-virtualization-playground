@@ -61,7 +61,9 @@ a|{yes}Pod Network
 a| {no}Secrets
 
 {no}ConfigMap
-| {no}DataVolume
+a| {no}DataVolume
+
+{no}SharedFS
 |link:virt-vms/01-vm-fedora.yaml[Click here]
 
 | Fedora-02
@@ -71,7 +73,9 @@ a| {yes}Pod Network
 a| {no}Secrets
 
 {no}ConfigMap
-| {no}DataVolume
+a| {no}DataVolume
+
+{no}SharedFS
 |link:virt-vms/02-vm-fedora.yaml[Click here]
 
 | Fedora-03
@@ -81,7 +85,9 @@ a| {yes}Pod Network
 a| {yes}Secrets
 
 {yes}ConfigMap
-| {no}DataVolume
+a| {no}DataVolume
+
+{no}SharedFS
 |link:virt-vms/03-vm-fedora.yaml[Click here]
 
 | Fedora-04
@@ -91,9 +97,21 @@ a| {yes}Pod Network
 a| {no}Secrets
 
 {no}ConfigMap
-| {yes}DataVolume
-|link:virt-vms/04-vm-fedora.yaml[Click here]
+a| {yes}DataVolume
 
+{no}SharedFS
+|link:virt-vms/04-vm-fedora.yaml[Click here]
+| Fedora-05
+a| {yes}Pod Network
+
+{no}Multus
+a| {no}Secrets
+
+{no}ConfigMap
+a| {no}DataVolume
+
+{yes}SharedFS
+|link:virt-vms/05-vm-fedora.yaml[Click here]
 |===
 
 
@@ -387,14 +405,14 @@ oc process -f virt-vms/03-vm-fedora.yaml -p VM_NAME=fedora-03 -p IP_ADDRESS="192
 
 == Storage
 
-Red Hat OpenShift Virtualization provides several mechanisms to manage the VM disks. It introduces new resource types to facilitate the process of creating the PVC with optimal parameters for VM disks and copying the disk image into the resulting PV:
+OCP-VIRT provides several mechanisms to manage the VM disks. It introduces new resource types to facilitate the process of creating the PVC with optimal parameters for VM disks and copying the disk image into the resulting PV:
 
 * *StorageProfile*: For each storage class, a StorageProfile resource gives default values optimized for VM disks. As a developer, when you use a storage profile to prepare a VM disk, the only parameter that you must provide is the disk size.
 
 * *DataVolume*: A DataVolume resource describes a VM disk. It groups the PVC definition and the details of the disk image to inject into the PV.
 
 
-=== Creating a VM Disk using a Data Volume
+=== Extra disks using Data Volumes
 
 DataVolume resources have two parts:
 
@@ -421,51 +439,28 @@ The source section of a DataVolume resource provides the details of the disk ima
 * Import via Registry (creates PVC).
 * Container (ephemeral).
 
-==== External Storage
 
-* Connect the storage from inside the VM. For storage that you access through the network.
-* Connect the storage through a Kubernetes PV and then attach the volume as a VM disk. This is the Kubernetes way.
 
-.Example of PV configuration
-[source, yaml]
+=== Creating a VM with an extra block disk
+
+Adding an extra block disk is as simple as creating a `DataVolume` with `.spec.source.blank: {}` and attach it to the VM. In the Template I also add the commands to generate the filesystem in the cloud-init for the sake of simplicity:
+
+[source, bash]
 ----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: example
-spec:
-  capacity:
-    storage: 50Gi
-  accessModes:
-    - ReadWriteOnce
-  volumeMode: Block
-  claimRef:
-    name: websrv1-staticimgs
-    namespace: vm-project
-# Option 1: iscsi
-  iscsi:
-     targetPortal: 
-     iqn: 
-     lun: 0
-     initiatorName: 
-# Option 2: NFS
-  nfs:
-    path: /exports-ocp/disk
-    server: $IP
-# Option 3: Fiber Channel
-  fc:
-    targetWWNs:
-      - ""
-    lun: 0
+# Create a VM and its blank disk at the same time
+oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04 | oc apply -f -
 ----
 
 
-=== Creating two VMs with a shared extra disk
+
+=== Creating two VMs with a shared filesystem
 
 WARNING: Currently, this chapter is not working as expected as `virtiofs` is an Experimental feature for Kubevirt and, without it, you cannot mount File Systems.
 
 
-CAUTION: The only StorageClass available by default on OCP on AWS is GP-2 and GP-3 which are AWS Elastic Block Store. This does not allow us to create RWX File Systems. Therefore, we have to add the https://docs.openshift.com/container-platform/4.12/storage/container_storage_interface/persistent-storage-csi-aws-efs.html[AWS Elastic File Service CSI Driver Operator] to access EFS or ODF (Openshift Data Foundation).
+==== Adding a filesystem Storage Class
+
+The only StorageClass available by default on OCP on AWS is GP-2 and GP-3 which are AWS Elastic Block Store. This does not allow us to create RWX File Systems. Therefore, we have to add the https://docs.openshift.com/container-platform/4.12/storage/container_storage_interface/persistent-storage-csi-aws-efs.html[AWS Elastic File Service CSI Driver Operator] to access EFS or https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.12[ODF (Openshift Data Foundation)].
 
 Access this documentation to know an automated process to configure AWS EFS in an OCP cluster deployed on AWS:
 
@@ -475,29 +470,27 @@ Access this documentation to know an automated process to configure Openshift Da
 
 >> link:storage-odf-aws/README.adoc[Click Here] <<
 
+==== Creating the OCP resources
 
 The following commands allow you to create two VMs using the new Storage Class:
 
-.Using AWS EFS
+.Create Data Volume using AWS EFS
 [source, bash]
 ----
-# Create the shared disk using a Data Volume
-oc process -f virt-vms/04-vm-shared-disk.yaml | oc apply -f -
-
-# Create the VMs that will use the shared disk
-oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
-oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
+oc process -f virt-vms/05-vm-shared-disk.yaml | oc apply -f -
 ----
 
-.Using ODF CephFS
+.Create Data Volume using ODF CephFS
 [source, bash]
 ----
-# Create the shared disk using a Data Volume
-oc process -f virt-vms/04-vm-shared-disk.yaml -p STORAGE_CLASS_NAME=ocs-storagecluster-cephfs | oc apply -f -
+oc process -f virt-vms/05-vm-shared-disk.yaml -p STORAGE_CLASS_NAME=ocs-storagecluster-cephfs | oc apply -f -
+----
 
-# Create the VMs that will use the shared disk
-oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-a | oc apply -f -
-oc process -f virt-vms/04-vm-fedora.yaml -p VM_NAME=fedora-04-b | oc apply -f -
+.Create both VMs
+[source, bash]
+----
+oc process -f virt-vms/05-vm-fedora.yaml -p VM_NAME=fedora-05-a | oc apply -f -
+oc process -f virt-vms/05-vm-fedora.yaml -p VM_NAME=fedora-05-b | oc apply -f -
 ----
 
 
