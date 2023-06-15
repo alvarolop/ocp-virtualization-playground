@@ -1,0 +1,11 @@
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: worker
+    # usage: virtualization
+  name: 05-worker-metal-kernelarg-selinuxpermissive
+spec:
+  kernelArguments:
+    - enforcing=0
