@@ -96,9 +96,9 @@ objects:
                   chpasswd:
                     expire: false
                   # bootcmd:
-                  #   # mount the extra filesystem
-                  #   - "mkdir /mnt/sharedfs"
-                  #   - "mount -t virtiofs sharedfs /mnt/sharedfs"
+                    # mount the extra filesystem
+                    - "mkdir /mnt/sharedfs"
+                    - "mount -t virtiofs sharedfs /mnt/sharedfs"
               name: cloudinitdisk
   - apiVersion: v1
     kind: Service
@@ -128,4 +128,4 @@ parameters:
   - name: SHARED_FS
     description: "The PVC name."
     required: false
-    value: shared-filesystem
+    value: shared-fs
