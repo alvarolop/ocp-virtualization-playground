@@ -1,0 +1,103 @@
+= Analysis: Change the Network of a VM
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-06
+
+== Introduction
+
+In some deployments, the VMs connect using Multus to an external network with the same range of the VM network to the stock pod network: 10.0.2.0/24.  
+
+
+== Try it now!
+
+The solution is to modify the field `vm.spec.template.spec.networks.pod.vmNetworkCIDR` with the desired network configuration
+
+
+NOTE: Execute the following commands considering that you are in the root folder of the Git repo:
+
+[source, bash]
+----
+# 1) Create the VM with the default VM Network CIDR
+oc process -f docs/analysis-change-vm-network/vm-fedora.yaml -p VM_NAME=fedora-80 | oc apply -f -
+
+
+# 2) Create the VM with a different VM Network CIDR
+oc process -f docs/analysis-change-vm-network/vm-fedora.yaml -p VM_NAME=fedora-81 -p VM_NETWORK="10.11.12.0/24" | oc apply -f -
+
+# 2) Create the VM with a smaller VM Network CIDR
+oc process -f docs/analysis-change-vm-network/vm-fedora.yaml -p VM_NAME=fedora-82 -p VM_NETWORK="10.11.12.0/30" | oc apply -f -
+
+----
+
+
+== Results
+
+=== Option 1: Using default configuration
+
+
+[source, bash]
+----
+[fedora@fedora-80 ~]$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc mq state UP group default qlen 1000
+    link/ether 02:4d:5f:00:00:1c brd ff:ff:ff:ff:ff:ff
+    altname enp1s0
+    inet 10.0.2.2/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 86313370sec preferred_lft 86313370sec
+    inet6 fe80::1782:e91d:9131:c6d/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[fedora@fedora-80 ~]$ ip r
+default via 10.0.2.1 dev eth0 proto dhcp metric 100 
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.2 metric 100
+----
+
+
+=== Option 2: Using different network
+
+[source, bash]
+----
+[fedora@fedora-81 ~]$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc mq state UP group default qlen 1000
+    link/ether 02:4d:5f:00:00:20 brd ff:ff:ff:ff:ff:ff
+    altname enp1s0
+    inet 10.11.12.2/24 brd 10.11.12.255 scope global dynamic noprefixroute eth0
+       valid_lft 86313587sec preferred_lft 86313587sec
+    inet6 fe80::fe36:7f44:2d32:b8a8/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[fedora@fedora-81 ~]$ ip r
+default via 10.11.12.1 dev eth0 proto dhcp metric 100 
+10.11.12.0/24 dev eth0 proto kernel scope link src 10.11.12.2 metric 100 
+----
+
+=== Option 3: Using a smaller network range
+
+[source, bash]
+----
+[fedora@fedora-82 ~]$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc mq state UP group default qlen 1000
+    link/ether 02:4d:5f:00:00:1f brd ff:ff:ff:ff:ff:ff
+    altname enp1s0
+    inet 10.11.12.2/30 brd 10.11.12.3 scope global dynamic noprefixroute eth0
+       valid_lft 86313504sec preferred_lft 86313504sec
+    inet6 fe80::8533:8da6:df16:d339/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[fedora@fedora-82 ~]$ ip r
+default via 10.11.12.1 dev eth0 proto dhcp metric 100 
+10.11.12.0/30 dev eth0 proto kernel scope link src 10.11.12.2 metric 100
+----

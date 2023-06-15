@@ -1,0 +1,131 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: fedora-01
+  labels:
+    template.kubevirt.io/type: vm
+    os.template.kubevirt.io/fedora36: 'true'
+    workload.template.kubevirt.io/server: 'true'
+  annotations:
+    name.os.template.kubevirt.io/fedora36: Fedora 36
+    description: Template to deploy a basic Fedora only connected to the Pod Network and without persistence configured.
+    openshift.io/display-name: Fedora VM 01
+    openshift.io/documentation-url: https://github.com/alvarolop/ocp-virtualization-playground
+    template.kubevirt.io/provider: Alvaro
+    iconClass: icon-fedora
+objects:
+  - apiVersion: kubevirt.io/v1
+    kind: VirtualMachine
+    metadata:
+      name: ${VM_NAME}
+      namespace: ${VM_NAMESPACE}
+      annotations:
+        description: "VM ${VM_NAME}"
+      labels:
+        app: ${VM_NAME}
+        os.template.kubevirt.io/fedora36: 'true'
+    spec:
+      running: true
+      template:
+        metadata:
+          annotations:
+            vm.kubevirt.io/flavor: small
+            vm.kubevirt.io/os: fedora36
+            vm.kubevirt.io/workload: server
+          labels:
+            kubevirt.io/domain: ${VM_NAME}
+            kubevirt.io/size: small
+            app: ${VM_NAME}
+        spec:
+          # https://kubevirt.io/user-guide/virtual_machines/accessing_virtual_machines/
+          # accessCredentials:
+          # - sshPublicKey:
+          #     source:
+          #       secret:
+          #         secretName: user-pub-key 
+          #     propagationMethod:
+          #       configDrive: {}
+          domain:
+            cpu:
+              cores: 2
+              sockets: 1
+              threads: 1
+            devices:
+              disks:
+                - disk:
+                    bus: virtio
+                  name: rootdisk
+                - disk:
+                    bus: virtio
+                  name: cloudinitdisk
+              interfaces:
+                - masquerade: {}
+                  model: virtio
+                  name: default
+              networkInterfaceMultiqueue: true
+              rng: {}
+            features:
+              acpi: {}
+              smm:
+                enabled: true
+            firmware:
+              bootloader:
+                efi: {}
+            machine:
+              type: q35
+            resources:
+              requests:
+                memory: 2Gi
+          hostname: ${VM_NAME}
+          networks:
+            - name: default
+              pod:
+                vmNetworkCIDR: ${VM_NETWORK}
+          terminationGracePeriodSeconds: 180
+          volumes:
+            - name: rootdisk
+              containerDisk:
+                image: 'quay.io/containerdisks/fedora:36'
+            - cloudInitNoCloud:
+                userData: |-
+                  #cloud-config
+                  ssh_authorized_keys:
+                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDA66H7xHgj94dzEmhW4ngURgd+nIldwiHzCqKrFSH22jG+YiFqRZtgIO1MzapYWbH7GE1xqW3W4p0e/Tk2WrbQR4mjolgThRJjHPBsnT77h8vynzlj0lGIJEQdnhEUtKLgtDqbHyfbDJGYjET+kNKuZe58wRZ3h5zAbIbzOUoTxA13lp640TP1sBX4Il8SO7BWaIjtRsOcYnQZEjy8oZ0JWS7Q3eEKsC9sG7XA1RQrkC1e3fOqEDE2rYrNQ122s+RcTD0ymL2KFGnFmf9UsfFvyVTCQYyAFzTO5IVpM+SLlVzoZAPVgvlsm70MXb51fFmOTJEzvqJGLWKHcZHrPwlP alvaro@localhost.localdomain
+                  ssh_pwauth: True
+                  user: fedora
+                  password: fedora
+                  chpasswd:
+                    expire: false
+              name: cloudinitdisk
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: ${VM_NAME}
+        os.template.kubevirt.io/fedora36: 'true'
+      name: ${VM_NAME}
+      namespace: ${VM_NAMESPACE}
+    spec:
+      ports:
+        - port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app: ${VM_NAME}
+      type: ClusterIP
+parameters:
+  - name: VM_NAMESPACE
+    description: "The project where the VM will be deployed."
+    required: false
+    value: vms-test
+  - name: VM_NAME
+    description: "The name of the VM deployment."
+    required: false
+    value: fedora-01
+  - name: VM_NETWORK
+    description: "The CIDR of the VM network."
+    required: false
+    value: 10.0.2.0/24
+
+
