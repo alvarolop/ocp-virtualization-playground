@@ -72,7 +72,7 @@ virtctl ssh --local-ssh-opts "-o StrictHostKeyChecking=accept-new" -c 'echo -e "
 [source, bash]
 ---
 # Create the VMs
-for i in {0..6}; do oc process -f analysis-network-config/9${i}-vm-fedora.yaml | oc apply -f -; done
+for i in {0..6}; do oc process -f docs/analysis-network-config/9${i}-vm-fedora.yaml | oc apply -f -; done
 # Get the results
-for i in {0..6}; do virtctl ssh --local-ssh-opts "-o StrictHostKeyChecking=accept-new" -c 'echo -e "########\n# IP A #\n########\n"; ip a; echo -e "\n############\n# IP ROUTE #\n############\n"; ip route' fedora@fedora-9${i} > analysis-network-config/results-9${i}.txt; done
+for i in {0..6}; do virtctl ssh --local-ssh-opts "-o StrictHostKeyChecking=accept-new" -c 'echo -e "########\n# IP A #\n########\n"; ip a; echo -e "\n############\n# IP ROUTE #\n############\n"; ip route' fedora@fedora-9${i} > docs/analysis-network-config/results-9${i}.txt; done
 ---
