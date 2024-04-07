@@ -1,0 +1,13 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonLabels:
+  app.kubernetes.io/instance: ocp-virt
+
+resources:
+  - nmstate
+  - ocp-virt-operator
+  - ocp-virt-configuration
+  - ocp-virt-network
+...

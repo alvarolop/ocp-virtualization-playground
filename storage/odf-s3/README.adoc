@@ -1,0 +1,60 @@
+= Using Object Storage with Openshift Data Foundation 
+Álvaro López Medina <alopezme@redhat.com>
+v1.0, 2023-06
+
+Red Hat OpenShift Data Foundation provides object storage for applications to consume. Applications can leverage object storage to read or write large amounts of unstructured data, such as text, audio, images, video, or binary content. A directory containing log files or backups can be uploaded to object storage for archiving.
+
+OpenShift Data Foundation provides object storage using two operators:
+
+* *Ceph RADOS Object Gateway* (Ceph RGW) [ocs-storagecluster-ceph-rgw]: 
+
+* *Multicloud Object Gateway* (NooBaa MCG) [openshift-storage.noobaa.io]: 
+
+
+== Option 1: Upload directly to AWS
+
+* Create a bucket without restrictions, so that you can access directly from the URL.
+
+* Upload the file with the following command: 
+
+[source, bash]
+----
+aws s3 cp storage-odf-aws/Pizzas-S3-menu-with-logo.pdf s3://$BUCKET_NAME/menu.pdf
+----
+
+== Option 2: Use Nooba MCG to interact with the AWS Bucket
+
+[source, bash]
+----
+oc apply -f storage-odf-s3/object-bucket-claim-nooba.yaml
+----
+
+Get the credentials and access data using the following commands:
+
+[source, bash]
+----
+oc extract configmap/menus-bucket --to=-
+oc extract secret/menus-bucket --to=-
+----
+
+Create a configMap with the menu:
+
+[source, bash]
+----
+oc create configmap pizza-menu --from-file=pizza-menu.pdf=storage-odf-s3/Pizzas-S3-menu-with-logo.pdf  -n vms-test
+----
+
+Create a pod with all the credentials injected that uploads the PDF:
+
+[source, bash]
+----
+oc process -f storage-odf-s3/01-pizza-menu-uploader.yaml | oc apply -f -
+----
+
+Expose the S3 storage using the following command: https://www.linode.com/community/questions/19534/how-do-i-create-a-public-link-for-a-file-in-object-storage
+
+== Option 3: Use Ceph RADOS to store the object
+
+// TODO
+
+

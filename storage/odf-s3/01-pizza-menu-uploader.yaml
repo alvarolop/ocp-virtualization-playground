@@ -26,21 +26,45 @@ objects:
         spec:
           containers:
             - name: ${POD_NAME}
-              image: registry.redhat.io/rhel8/support-tools:8.7-10
+              image: docker.io/amazon/aws-cli:latest
               command:
                 - bash
                 - '-c'
-                - echo "Hello World!"; while true; do sleep 3600; done
+                - echo "Uploading the PDF!"; aws s3 --no-verify-ssl cp /tmp/pizza-menu.pdf s3://$BUCKET_NAME/menu-from-pod.pdf --endpoint-url "https://${BUCKET_HOST}"; while true; do sleep 3600; done
               ports:
                 - containerPort: 8080
                   protocol: TCP
+              env:
+                - name: AWS_CA_BUNDLE
+                  value: /run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+              envFrom:
+                - configMapRef:
+                    name: menus-bucket
+                - secretRef:
+                    name: menus-bucket
               resources: {}
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               imagePullPolicy: Always
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+              volumeMounts:
+                - name: pizza-menu
+                  mountPath: /tmp/
+          volumes:
+            - name: pizza-menu
+              configMap:
+                name: pizza-menu
           restartPolicy: Always
           terminationGracePeriodSeconds: 30
           dnsPolicy: ClusterFirst
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
   - kind: Service
     apiVersion: v1
     metadata:
@@ -70,4 +94,4 @@ parameters:
   - name: POD_NAME
     description: "The application name."
     required: false
-    value: support-tools
+    value: menu-uploader

@@ -119,21 +119,9 @@ a| {no}DataVolume
 
 In order to be able to create VMs on OpenShift on AWS, you will need to add bare metal nodes to your OpenShift installation. The following steps simplify the process of creating a Bare Metal MachineSet:
 
-
-1. Get the clusterID using the following command:
-+
 [source, bash]
 ----
-oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster
-----
-+
-2. Create the Machine Set:
-+
-[source, bash]
-----
-oc process -f ocp-installation/01-baremetal-machineset.yaml \
--p INFRASTRUCTURE_ID=$(oc get -o jsonpath='{.status.infrastructureName}{"\n"}' infrastructure cluster) \
-| oc apply -n openshift-machine-api -f -
+./scripts/00-create-baremetal-instance.sh
 ----
 
 .*AWS Instances*
@@ -164,7 +152,7 @@ Click on `Create network interface` and access the https://eu-west-3.console.aws
 This is automated with the following script:
 [source, bash]
 ----
-./ocp-tools/add-net-interface.sh ./aws-env-vars
+./scripts/01-add-net-interface.sh ./aws-env-vars
 ----
 
 

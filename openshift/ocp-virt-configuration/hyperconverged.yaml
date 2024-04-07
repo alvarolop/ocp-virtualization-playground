@@ -3,6 +3,7 @@ apiVersion: hco.kubevirt.io/v1beta1
 kind: HyperConverged
 metadata:
   name: kubevirt-hyperconverged
+  namespace: openshift-cnv
   annotations:
     deployOVS: 'false'
     kubevirt.kubevirt.io/jsonpatch: |-
@@ -13,7 +14,7 @@ metadata:
           "value": "ExperimentalVirtiofsSupport"
         }
       ]
-  namespace: openshift-cnv
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   liveMigrationConfig:
     completionTimeoutPerGiB: 800

@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-nmstate
+  annotations:
+    openshift.io/description: "Kubernetes NMState Operator"
+    openshift.io/display-name: "Openshift NMState"

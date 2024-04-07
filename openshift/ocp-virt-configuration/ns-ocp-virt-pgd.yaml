@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ocp-virt-pgd
+  annotations:
+    openshift.io/description: "Project to deploy different VM configurations"
+    openshift.io/display-name: "OCP-Virt Playground"

@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ns-openshift-nmstate.yaml
+  - og-openshift-nmstate.yaml
+  - sub-kubernetes-nmstate-operator.yaml
+  - nmstate-nmstate.yaml
+...
