@@ -508,7 +508,7 @@ You can deploy this container using the following script:
 
 [source, bash]
 ----
-oc process -f docs/ocp-tools/01-toolbox.yaml -p POD_PROJECT=ocp-virt-pgd | oc apply -f -
+oc process -f docs/ocp-tools/01-toolbox.yaml -p NAMESPACE=ocp-virt-pgd | oc apply -f -
 ----
 
 
