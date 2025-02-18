@@ -86,7 +86,7 @@ parameters:
   - name: APP_PROJECT
     description: "The project where the application will be deployed."
     required: false
-    value: vms-test
+    value: ocp-virt-pgd
   - name: APP_NAME
     description: "The application name."
     required: false

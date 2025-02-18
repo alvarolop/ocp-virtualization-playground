@@ -41,7 +41,7 @@ Create a configMap with the menu:
 
 [source, bash]
 ----
-oc create configmap pizza-menu --from-file=pizza-menu.pdf=storage-odf-s3/Pizzas-S3-menu-with-logo.pdf  -n vms-test
+oc create configmap pizza-menu --from-file=pizza-menu.pdf=storage-odf-s3/Pizzas-S3-menu-with-logo.pdf  -n ocp-virt-pgd
 ----
 
 Create a pod with all the credentials injected that uploads the PDF:

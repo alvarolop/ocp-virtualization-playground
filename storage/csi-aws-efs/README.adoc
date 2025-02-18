@@ -26,7 +26,7 @@ oc wait clustercsidriver.operator.openshift.io/efs.csi.aws.com \
 
 # Create the PVC
 oc process -f docs/analysis-share-pv/10-pvc.yaml \
-  PVC_NAMESPACE=vms-test | oc apply -f -
+  PVC_NAMESPACE=ocp-virt-pgd | oc apply -f -
 
 # Create the application
 oc process -f docs/analysis-share-pv/20-app.yaml \

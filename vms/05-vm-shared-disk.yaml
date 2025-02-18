@@ -26,7 +26,7 @@ parameters:
   - name: DATAVOLUME_NAMESPACE
     description: "The namespace where the DV will be generated."
     required: false
-    value: vms-test
+    value: ocp-virt-pgd
   - name: DATAVOLUME_NAME
     description: "The PVC name."
     required: false
