@@ -10,4 +10,3 @@ resources:
   - ocp-virt-operator
   - ocp-virt-configuration
   - ocp-virt-network
-...

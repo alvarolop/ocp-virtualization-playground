@@ -5,4 +5,3 @@ resources:
   - ns-openshift-cnv.yaml
   - og-kubevirt-hyperconverged-group.yaml
   - sub-hco-operatorhub.yaml
-...

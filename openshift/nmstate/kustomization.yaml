@@ -6,4 +6,3 @@ resources:
   - og-openshift-nmstate.yaml
   - sub-kubernetes-nmstate-operator.yaml
   - nmstate-nmstate.yaml
-...

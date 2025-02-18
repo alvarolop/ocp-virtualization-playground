@@ -5,7 +5,7 @@ metadata:
   labels:
     app: ocp-virt
   name: ocp-virt
-  namespace: gitops
+  namespace: openshift-gitops
 spec:
   destination:
     server: 'https://kubernetes.default.svc'

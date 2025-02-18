@@ -4,4 +4,4 @@ kind: Kustomization
 resources:
   - ns-ocp-virt-pgd.yaml
   - hyperconverged.yaml
-...
+

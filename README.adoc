@@ -117,6 +117,18 @@ a| {no}DataVolume
 
 == Prerequisites for AWS
 
+=== Adding the configuration file
+
+If you installed your cluster using the `ocp-on-aws` repository, the easiest way is to link the configuration files from both repos, as they are always equivalent:
+
+[source, bash]
+----
+ln -s $FILENAME_FROM_INSTALL_REPO aws-env-vars
+----
+
+
+=== Creating the Baremetal instance
+
 In order to be able to create VMs on OpenShift on AWS, you will need to add bare metal nodes to your OpenShift installation. The following steps simplify the process of creating a Bare Metal MachineSet:
 
 [source, bash]
@@ -129,10 +141,10 @@ In order to be able to create VMs on OpenShift on AWS, you will need to add bare
 ====
 For other sizes of AWS nodes, check the https://aws.amazon.com/ec2/instance-types[instance types list].
 
-Take into account that pricing for Bare Metal nodes is considerably higher than for normal instances. For example, `c5.metal` costs $4.8 per hour while `m5.xlarge` is just $0.222. https://aws.amazon.com/ec2/pricing/on-demand/[Here] you can find a full list of prices.
+Take into account that pricing for Bare Metal nodes is considerably higher than for normal instances. For example, `c5.metal` costs $4.4/hour while `m7.xlarge` is just $0.222. https://aws.amazon.com/ec2/pricing/on-demand/[Here] you can find a full list of prices.
 ====
 
-For more information, check the https://docs.openshift.com/container-platform/4.12/machine_management/creating_machinesets/creating-machineset-aws.html#machineset-yaml-aws_creating-machineset-aws[official documentation].
+For more information, check the https://docs.openshift.com/container-platform/4.17/machine_management/creating_machinesets/creating-machineset-aws.html#machineset-yaml-aws_creating-machineset-aws[official documentation].
 
 
 
@@ -165,30 +177,16 @@ Documentation:
 
 == Installation
 
-Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads.
+Red Hat OpenShift Virtualization is a Kubernetes operator on RHOCP, based on the Kubernetes virtualization add-on, KubeVirt, which allows the management of VM workloads alongside container workloads. The following ArgoCD application wil configure the following:
 
-WARNING: The cluster must be installed on-premise, on bare metal with Red Hat Enterprise Linux CoreOS workers. AWS is not supported yet.
+1. OCP-Virt operator.
+2. Create the `HyperConverged` object, which deploys and handles OCP-Virt and its components.
+3. NMstate operator and default configuration.
+4. Basic network configuration for the VMs.
 
-.*Disambiguation*
-[TIP]
-====
-* *Virtualization* is to create virtualized resources from physical hardware, such as VMs.
-* *IaaS* is a form of cloud computing that provides IT infrastructure.
-* *Hypervisor* is virtualization software that helps you to create and manage VMs.
-====
-
-1. Install the operator:
-+
 [source, bash]
 ----
-oc apply -k openshift/ocp-virt-operator
-----
-+
-2. Create the `HyperConverged` object, which deploys and manages OpenShift Virtualization and its components:
-+
-[source, bash]
-----
-oc apply -k openshift/ocp-virt-configuration
+oc apply -f application-ocp-virt.yaml
 ----
 
 If you install the operator using the web console, you will see the following messages during installation:

@@ -8,4 +8,3 @@ commonLabels:
 resources:
   - nncp-br1-policy.yaml
   - nad-fedora-external.yaml
-...
