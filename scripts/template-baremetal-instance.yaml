@@ -1,28 +1,29 @@
+---
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata: 
-  name: machineset-template
+  name: metal-worker
 objects:
   - apiVersion: machine.openshift.io/v1beta1
     kind: MachineSet
     metadata:
       labels:
         machine.openshift.io/cluster-api-cluster: ${INFRASTRUCTURE_ID}
-      name: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${ZONE}
+      name: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${AZ}
       namespace: openshift-machine-api
     spec:
       replicas: ${{REPLICAS}}
       selector:
         matchLabels:
           machine.openshift.io/cluster-api-cluster: ${INFRASTRUCTURE_ID}
-          machine.openshift.io/cluster-api-machineset: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${ZONE}
+          machine.openshift.io/cluster-api-machineset: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${AZ}
       template:
         metadata:
           labels:
             machine.openshift.io/cluster-api-cluster: ${INFRASTRUCTURE_ID}
             machine.openshift.io/cluster-api-machine-role: ${ROLE} 
             machine.openshift.io/cluster-api-machine-type: ${ROLE} 
-            machine.openshift.io/cluster-api-machineset: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${ZONE}
+            machine.openshift.io/cluster-api-machineset: ${INFRASTRUCTURE_ID}-${PREFIX}${ROLE}-${AZ}
             usage: virtualization
         spec:
           metadata:
@@ -33,7 +34,7 @@ objects:
             value:
               ami:
                 id: ${AMI}
-              apiVersion: awsproviderconfig.openshift.io/v1beta1
+              apiVersion: machine.openshift.io/v1beta1
               blockDevices:
                 - ebs:
                     iops: 0
@@ -44,21 +45,25 @@ objects:
               deviceIndex: 0
               iamInstanceProfile:
                 id: ${INFRASTRUCTURE_ID}-worker-profile 
-              instanceType: c5.metal
+              instanceType: ${INSTANCE_TYPE}
               kind: AWSMachineProviderConfig
               placement:
-                availabilityZone: ${ZONE}
+                availabilityZone: ${REGION}${AZ}
                 region: ${REGION} 
               securityGroups:
                 - filters:
                     - name: tag:Name
                       values:
-                        - ${INFRASTRUCTURE_ID}-worker-sg 
+                        - ${INFRASTRUCTURE_ID}-node 
+                - filters:
+                    - name: tag:Name
+                      values:
+                        - ${INFRASTRUCTURE_ID}-lb
               subnet:
                 filters:
                   - name: tag:Name
                     values:
-                      - ${INFRASTRUCTURE_ID}-private-${ZONE}
+                      - ${INFRASTRUCTURE_ID}-subnet-private-${REGION}${AZ}
               tags:
                 - name: kubernetes.io/cluster/${INFRASTRUCTURE_ID}
                   value: owned
@@ -75,20 +80,22 @@ parameters:
     value: worker
   - name: REGION
     description: "Node region."
-    required: false
-    value: eu-west-3
-  - name: ZONE
+    required: true
+  - name: AZ
     description: "Node zone."
     required: false
-    value: eu-west-3a
+    value: a
   - name: PREFIX
     description: "Prefix that will be attached to the node name."
     required: false
-    value: metal
+    value: metal-
+  - name: INSTANCE_TYPE
+    description: "EC2 AWS instance type."
+    required: false
+    value: c5n.metal
   - name: AMI
     description: "AMI of the CoreOS image in that AWS region."
     required: false
-    value: ami-06f98f607a50937c6
   - name: INFRASTRUCTURE_ID
     description: "Cluster ID."
     required: true

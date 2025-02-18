@@ -46,7 +46,7 @@ echo "This is the NETWORK_INTERFACE_ID: $NETWORK_INTERFACE_ID"
 # The following command retrieves the ID of the metal instance
 INSTANCE_ID=$(aws ec2 describe-instances \
     --region $AWS_DEFAULT_REGION \
-    --filters Name=instance-type,Values=c5.metal Name=instance-state-code,Values=16 \
+    --filters Name=instance-type,Values=c5n.metal Name=instance-state-code,Values=16 \
     --query "Reservations[*].Instances[*].{Instance:InstanceId}" \
     --output text)
 
